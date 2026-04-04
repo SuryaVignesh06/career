@@ -10,6 +10,70 @@ export const careerMeta = {
     mobile:    { label: 'Mobile Dev', emoji: '📱', color: '#8B5CF6', salary: '₹5L – ₹12L' },
 };
 
+// ─── Post-completion: Job Roles, Job Boards & Resume Tips ─────────────────────
+export const careerCompletionData = {
+    fullstack: {
+        jobRoles: [
+            { title: 'Full Stack Developer', salary: '₹6L – ₹14L', match: 96, icon: '⚡', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=full+stack+developer&location=India', naukri: 'https://www.naukri.com/full-stack-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=full+stack+developer' } },
+            { title: 'React Developer', salary: '₹5L – ₹12L', match: 92, icon: '⚛️', tag: 'High Demand', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=react+developer&location=India', naukri: 'https://www.naukri.com/react-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=react+developer' } },
+            { title: 'Node.js Backend Engineer', salary: '₹7L – ₹15L', match: 88, icon: '🟢', tag: 'Great Salary', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=nodejs+developer&location=India', naukri: 'https://www.naukri.com/node-js-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=nodejs+developer' } },
+            { title: 'Software Development Engineer', salary: '₹8L – ₹20L', match: 82, icon: '🚀', tag: 'FAANG Ready', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=sde+developer&location=India', naukri: 'https://www.naukri.com/software-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=software+developer' } },
+        ],
+        resumeSkills: ['React.js', 'Node.js', 'REST APIs', 'MongoDB', 'TypeScript', 'System Design', 'Git & CI/CD', 'Docker'],
+        resumeTips: ['Add a GitHub link with 3+ live projects', 'Quantify impact: "Reduced load time by 40%"', 'List your DSA proficiency (LeetCode rating)', 'Include deployed URLs for all projects'],
+    },
+    aiml: {
+        jobRoles: [
+            { title: 'Machine Learning Engineer', salary: '₹8L – ₹18L', match: 95, icon: '🧠', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=machine+learning+engineer&location=India', naukri: 'https://www.naukri.com/machine-learning-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=machine+learning+engineer' } },
+            { title: 'Data Scientist', salary: '₹7L – ₹16L', match: 90, icon: '📊', tag: 'High Demand', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=data+scientist&location=India', naukri: 'https://www.naukri.com/data-scientist-jobs', indeed: 'https://in.indeed.com/jobs?q=data+scientist' } },
+            { title: 'AI Research Engineer', salary: '₹12L – ₹25L', match: 80, icon: '🔬', tag: 'Premium', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=ai+research+engineer&location=India', naukri: 'https://www.naukri.com/artificial-intelligence-jobs', indeed: 'https://in.indeed.com/jobs?q=ai+engineer' } },
+            { title: 'NLP / LLM Engineer', salary: '₹10L – ₹22L', match: 85, icon: '🤖', tag: 'Trending', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=nlp+engineer&location=India', naukri: 'https://www.naukri.com/nlp-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=nlp+engineer' } },
+        ],
+        resumeSkills: ['Python', 'PyTorch / TensorFlow', 'Scikit-Learn', 'HuggingFace', 'MLOps', 'LangChain', 'SQL', 'Cloud ML (AWS/GCP)'],
+        resumeTips: ['Link to Kaggle profile with competition rankings', 'Describe model accuracy improvements numerically', 'Add research papers or blog posts if any', 'Highlight LLM/GenAI project experience'],
+    },
+    data: {
+        jobRoles: [
+            { title: 'Data Analyst', salary: '₹4L – ₹10L', match: 94, icon: '📈', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=data+analyst&location=India', naukri: 'https://www.naukri.com/data-analyst-jobs', indeed: 'https://in.indeed.com/jobs?q=data+analyst' } },
+            { title: 'Business Intelligence Analyst', salary: '₹5L – ₹12L', match: 88, icon: '💡', tag: 'High Demand', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=bi+analyst&location=India', naukri: 'https://www.naukri.com/business-intelligence-jobs', indeed: 'https://in.indeed.com/jobs?q=business+intelligence' } },
+            { title: 'Data Engineer', salary: '₹7L – ₹16L', match: 82, icon: '🔧', tag: 'Great Salary', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=data+engineer&location=India', naukri: 'https://www.naukri.com/data-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=data+engineer' } },
+            { title: 'Product Analyst', salary: '₹6L – ₹14L', match: 85, icon: '🎯', tag: 'Trending', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=product+analyst&location=India', naukri: 'https://www.naukri.com/product-analyst-jobs', indeed: 'https://in.indeed.com/jobs?q=product+analyst' } },
+        ],
+        resumeSkills: ['SQL', 'Python (Pandas)', 'Power BI / Tableau', 'Excel', 'Statistics', 'EDA', 'Apache Spark', 'Data Storytelling'],
+        resumeTips: ['Add dashboard screenshots or Tableau Public links', 'Mention size of datasets you worked with', 'Include SQL query optimization experience', 'List certifications (Google Data Analytics, etc.)'],
+    },
+    devops: {
+        jobRoles: [
+            { title: 'DevOps Engineer', salary: '₹7L – ₹14L', match: 95, icon: '☁️', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=devops+engineer&location=India', naukri: 'https://www.naukri.com/devops-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=devops+engineer' } },
+            { title: 'Cloud Engineer (AWS/Azure)', salary: '₹8L – ₹18L', match: 90, icon: '🌩️', tag: 'High Demand', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=cloud+engineer&location=India', naukri: 'https://www.naukri.com/cloud-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=cloud+engineer' } },
+            { title: 'Site Reliability Engineer', salary: '₹10L – ₹22L', match: 82, icon: '🛠️', tag: 'Premium', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=sre&location=India', naukri: 'https://www.naukri.com/site-reliability-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=site+reliability+engineer' } },
+            { title: 'Platform/Infrastructure Engineer', salary: '₹9L – ₹20L', match: 86, icon: '🏗️', tag: 'Great Salary', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=infrastructure+engineer&location=India', naukri: 'https://www.naukri.com/infrastructure-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=infrastructure+engineer' } },
+        ],
+        resumeSkills: ['Docker', 'Kubernetes', 'Terraform', 'AWS/GCP', 'CI/CD (GitHub Actions, Jenkins)', 'Linux', 'Prometheus & Grafana', 'Bash Scripting'],
+        resumeTips: ['Add AWS/Azure certification badges', 'Quantify infra cost savings or uptime improvements', 'List GitHub Actions workflows you built', 'Mention on-call experience and incident response'],
+    },
+    cyber: {
+        jobRoles: [
+            { title: 'Security Analyst', salary: '₹5L – ₹12L', match: 93, icon: '🛡️', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=security+analyst&location=India', naukri: 'https://www.naukri.com/security-analyst-jobs', indeed: 'https://in.indeed.com/jobs?q=security+analyst' } },
+            { title: 'Penetration Tester', salary: '₹6L – ₹14L', match: 88, icon: '🔐', tag: 'High Demand', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=penetration+tester&location=India', naukri: 'https://www.naukri.com/penetration-testing-jobs', indeed: 'https://in.indeed.com/jobs?q=penetration+tester' } },
+            { title: 'SOC Analyst (L1/L2)', salary: '₹4L – ₹10L', match: 91, icon: '📡', tag: 'Entry Friendly', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=soc+analyst&location=India', naukri: 'https://www.naukri.com/soc-analyst-jobs', indeed: 'https://in.indeed.com/jobs?q=soc+analyst' } },
+            { title: 'Cloud Security Engineer', salary: '₹9L – ₹20L', match: 80, icon: '☁️', tag: 'Premium', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=cloud+security+engineer&location=India', naukri: 'https://www.naukri.com/cloud-security-engineer-jobs', indeed: 'https://in.indeed.com/jobs?q=cloud+security' } },
+        ],
+        resumeSkills: ['Kali Linux', 'Burp Suite', 'Nmap', 'Metasploit', 'OWASP Top 10', 'CompTIA Security+', 'Wireshark', 'SIEM Tools'],
+        resumeTips: ['List certifications: Security+, CEH, eJPT', 'Add HackerOne/Bugcrowd profile with findings', 'Mention TryHackMe/HackTheBox ranks', 'Include any CVE discoveries or responsible disclosures'],
+    },
+    mobile: {
+        jobRoles: [
+            { title: 'React Native Developer', salary: '₹5L – ₹12L', match: 94, icon: '📱', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=react+native+developer&location=India', naukri: 'https://www.naukri.com/react-native-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=react+native+developer' } },
+            { title: 'Flutter Developer', salary: '₹5L – ₹13L', match: 88, icon: '💙', tag: 'High Demand', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=flutter+developer&location=India', naukri: 'https://www.naukri.com/flutter-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=flutter+developer' } },
+            { title: 'iOS Developer (Swift)', salary: '₹7L – ₹16L', match: 80, icon: '🍎', tag: 'Premium', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=ios+developer&location=India', naukri: 'https://www.naukri.com/ios-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=ios+developer' } },
+            { title: 'Mobile App Engineer', salary: '₹6L – ₹14L', match: 90, icon: '🛠️', tag: 'Versatile', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=mobile+app+engineer&location=India', naukri: 'https://www.naukri.com/mobile-developer-jobs', indeed: 'https://in.indeed.com/jobs?q=mobile+app+engineer' } },
+        ],
+        resumeSkills: ['React Native', 'Expo', 'TypeScript', 'Firebase', 'REST APIs', 'Redux / Zustand', 'App Store Deploy', 'Reanimated 3'],
+        resumeTips: ['Add Play Store / App Store links to your apps', 'Mention download counts or user ratings', 'List performance wins (app size, load time)', 'Include UI/UX design skills if applicable'],
+    },
+};
+
 export const roadmapData = {
     fullstack: [
         {

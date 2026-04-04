@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Map, Bot, FileText, Home, ChevronRight, Flame, Zap, Target, CheckCircle, Trophy, LogOut, Lock, BookOpen, Sparkles, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Map, Bot, FileText, Home, ChevronRight, Flame, Zap, Target, CheckCircle, Trophy, LogOut, Lock, BookOpen, Sparkles, Star, Briefcase, ExternalLink, Award, PenSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { roadmapData, careerMeta, getNextNode, getProgress } from '../data/roadmaps';
+import { roadmapData, careerMeta, careerCompletionData, getNextNode, getProgress } from '../data/roadmaps';
 
 const navItems = [
     { icon: Home, label: 'Home', path: '/dashboard' },
@@ -49,6 +49,9 @@ export default function DashboardPage() {
     const progress   = getProgress(career, completedIds);
     const meta       = careerMeta[career] || careerMeta.fullstack;
     const nextNode   = getNextNode(career, completedIds);
+    const isComplete = progress === 100;
+    const completion = careerCompletionData[career] || careerCompletionData.fullstack;
+    const [expandedRole, setExpandedRole] = useState(null);
 
     // Get first 4 nodes of this career's roadmap with computed statuses
     const allPhases  = roadmapData[career] || roadmapData.fullstack;
@@ -273,7 +276,12 @@ export default function DashboardPage() {
                                     </Link>
                                 </>
                             ) : (
-                                <p className="text-sm text-[var(--green)] font-medium">🎉 Roadmap complete! You're a legend.</p>
+                                <div className="flex flex-col gap-3">
+                                    <p className="text-sm text-[var(--green)] font-bold">🎉 Roadmap complete! You're a legend.</p>
+                                    <a href="#completion-section" className="btn-primary w-full text-sm py-2.5 text-center flex items-center justify-center gap-2">
+                                        <Briefcase size={14} /> View Job Opportunities
+                                    </a>
+                                </div>
                             )}
                         </motion.div>
                     </div>
@@ -299,6 +307,228 @@ export default function DashboardPage() {
                         ))}
                     </div>
                 </motion.div>
+
+                {/* ── POST-COMPLETION SECTION ─────────────────────────── */}
+                <AnimatePresence>
+                {isComplete && (
+                    <motion.div
+                        id="completion-section"
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                        className="mt-12 flex flex-col gap-10"
+                    >
+                        {/* 🎉 Celebration Banner */}
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="relative overflow-hidden rounded-2xl border border-[var(--cyan)]/30 bg-gradient-to-r from-[var(--cyan)]/10 via-[var(--purple)]/10 to-[var(--cyan)]/10 p-8 text-center"
+                        >
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,229,255,0.08),transparent_70%)]" />
+                            <div className="text-5xl mb-3">🏆</div>
+                            <h2 className="text-3xl font-heading font-bold text-white mb-2">Roadmap Completed!</h2>
+                            <p className="text-[var(--muted)] max-w-xl mx-auto">
+                                You've mastered the <span className="text-[var(--cyan)] font-semibold">{meta.label}</span> roadmap with {xp.toLocaleString()} XP earned.
+                                Time to land your dream job! Here's everything you need.
+                            </p>
+                            <div className="flex items-center justify-center gap-6 mt-5">
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[var(--cyan)]">{xp.toLocaleString()}</div>
+                                    <div className="text-xs text-[var(--muted)]">Total XP</div>
+                                </div>
+                                <div className="w-px h-10 bg-[var(--border)]" />
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[var(--green)]">{completedIds.length}</div>
+                                    <div className="text-xs text-[var(--muted)]">Modules Done</div>
+                                </div>
+                                <div className="w-px h-10 bg-[var(--border)]" />
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[var(--amber)]">{level}</div>
+                                    <div className="text-xs text-[var(--muted)]">Level Reached</div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* 💼 Recommended Job Roles */}
+                        <div>
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="w-9 h-9 rounded-xl bg-[var(--cyan)]/10 flex items-center justify-center">
+                                    <Briefcase size={18} className="text-[var(--cyan)]" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">Recommended Job Roles</h2>
+                                    <p className="text-xs text-[var(--muted)]">Based on your {meta.label} roadmap completion</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {completion.jobRoles.map((role, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.1 * i }}
+                                        className="glass-card p-5 flex flex-col gap-3 group hover:-translate-y-1 transition-all hover:shadow-[0_0_20px_rgba(0,229,255,0.12)] cursor-pointer"
+                                        onClick={() => setExpandedRole(expandedRole === i ? null : i)}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-2xl">{role.icon}</span>
+                                                <div>
+                                                    <div className="font-bold text-white group-hover:text-[var(--cyan)] transition-colors">{role.title}</div>
+                                                    <div className="text-xs text-[var(--muted)] mt-0.5">{role.salary} · India</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1.5">
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--cyan)]/15 text-[var(--cyan)] font-medium border border-[var(--cyan)]/20">{role.tag}</span>
+                                                <div className="flex items-center gap-1 text-xs text-[var(--muted)]">
+                                                    <span className="text-[var(--green)] font-bold">{role.match}%</span> match
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Match bar */}
+                                        <div className="w-full h-1 bg-[var(--surface2)] rounded-full overflow-hidden">
+                                            <motion.div
+                                                className="h-full bg-gradient-to-r from-[var(--cyan)] to-[var(--purple)] rounded-full"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${role.match}%` }}
+                                                transition={{ duration: 0.8, delay: 0.2 * i }}
+                                            />
+                                        </div>
+                                        {/* Apply links — expand on click */}
+                                        <AnimatePresence>
+                                        {expandedRole === i && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="pt-3 border-t border-[var(--border)] flex flex-wrap gap-2">
+                                                    <span className="text-xs text-[var(--muted)] w-full mb-1">Apply on:</span>
+                                                    <a href={role.links.linkedin} target="_blank" rel="noopener noreferrer"
+                                                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                                                        onClick={e => e.stopPropagation()}>
+                                                        <ExternalLink size={11} /> LinkedIn
+                                                    </a>
+                                                    <a href={role.links.naukri} target="_blank" rel="noopener noreferrer"
+                                                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-all"
+                                                        onClick={e => e.stopPropagation()}>
+                                                        <ExternalLink size={11} /> Naukri
+                                                    </a>
+                                                    <a href={role.links.indeed} target="_blank" rel="noopener noreferrer"
+                                                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 transition-all"
+                                                        onClick={e => e.stopPropagation()}>
+                                                        <ExternalLink size={11} /> Indeed
+                                                    </a>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                        </AnimatePresence>
+                                        <div className="flex items-center justify-end gap-1 text-xs text-[var(--muted)]">
+                                            {expandedRole === i ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                                            {expandedRole === i ? 'Collapse' : 'Apply links'}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 📋 Job Application Checklist + 📄 Resume Tips — side by side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Job Application Checklist */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 }}
+                                className="glass-card p-6 flex flex-col gap-4"
+                            >
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className="w-9 h-9 rounded-xl bg-[var(--green)]/10 flex items-center justify-center">
+                                        <CheckCircle size={18} className="text-[var(--green)]" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white">Job Application Checklist</h3>
+                                        <p className="text-xs text-[var(--muted)]">Complete these before applying</p>
+                                    </div>
+                                </div>
+                                {[
+                                    { step: 'Update your resume with latest skills', done: true },
+                                    { step: 'Create / polish your LinkedIn profile', done: true },
+                                    { step: 'Build 2–3 portfolio projects', done: false },
+                                    { step: 'Write a tailored cover letter template', done: false },
+                                    { step: 'Set job alerts on LinkedIn & Naukri', done: false },
+                                    { step: 'Prepare for behavioral (HR) interviews', done: false },
+                                    { step: 'Practice DSA & system design problems', done: false },
+                                    { step: 'Connect with 10+ recruiters on LinkedIn', done: false },
+                                ].map((item, i) => (
+                                    <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                                        item.done
+                                            ? 'border-[var(--green)]/30 bg-[var(--green)]/5'
+                                            : 'border-[var(--border)] hover:border-[var(--cyan)]/30 hover:bg-[var(--surface2)]'
+                                    }`}>
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
+                                            item.done ? 'border-[var(--green)] bg-[var(--green)]/20' : 'border-[var(--border)]'
+                                        }`}>
+                                            {item.done && <CheckCircle size={11} className="text-[var(--green)]" />}
+                                        </div>
+                                        <span className={`text-sm ${ item.done ? 'text-[var(--green)] line-through opacity-70' : 'text-white'}`}>{item.step}</span>
+                                    </div>
+                                ))}
+                            </motion.div>
+
+                            {/* Resume Update Tips */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.6 }}
+                                className="glass-card p-6 flex flex-col gap-4"
+                            >
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className="w-9 h-9 rounded-xl bg-[var(--purple)]/10 flex items-center justify-center">
+                                        <PenSquare size={18} className="text-[var(--purple)]" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white">Resume Update Guide</h3>
+                                        <p className="text-xs text-[var(--muted)]">Tailored for {meta.label} roles</p>
+                                    </div>
+                                </div>
+
+                                {/* Skills to add */}
+                                <div>
+                                    <p className="text-xs text-[var(--muted)] mb-2 font-medium uppercase tracking-wider">Skills to Add</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {completion.resumeSkills.map((skill, i) => (
+                                            <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-[var(--cyan)]/10 text-[var(--cyan)] border border-[var(--cyan)]/20">
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Resume tips */}
+                                <div>
+                                    <p className="text-xs text-[var(--muted)] mb-2 font-medium uppercase tracking-wider">Pro Tips</p>
+                                    <div className="flex flex-col gap-2">
+                                        {completion.resumeTips.map((tip, i) => (
+                                            <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-[var(--surface2)] border border-[var(--border)]">
+                                                <span className="text-[var(--amber)] font-bold text-sm shrink-0">→</span>
+                                                <span className="text-sm text-white">{tip}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* CTA to Resume Builder */}
+                                <Link to="/resume" className="btn-primary w-full text-sm py-3 flex items-center justify-center gap-2 mt-1">
+                                    <PenSquare size={15} /> Open ATS Resume Builder
+                                </Link>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+                </AnimatePresence>
             </main>
         </div>
     );
