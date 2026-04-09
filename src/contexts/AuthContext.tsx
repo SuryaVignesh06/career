@@ -1,6 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+interface AuthContextValue {
+    currentUser: any;
+    userProfile: any;
+    updateProfile: (updates: any) => any;
+    signup: (name: string, email: string, password: string) => Promise<any>;
+    login: (email: string, password: string) => Promise<any>;
+    logout: () => void;
+    demoLogin: () => void;
+    loading?: boolean;
+}
+
+const AuthContext = createContext<AuthContextValue>({} as AuthContextValue);
 export function useAuth() { return useContext(AuthContext); }
 
 // ── Storage helpers ────────────────────────────────────────────────────────────

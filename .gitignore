@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Migration backups
+*_old.jsx
+scratch_repo/
+dist/
+build_err.txt
+build_output.txt
+.gemini/
+

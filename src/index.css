@@ -1,108 +1,108 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;500&family=Syne:wght@700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --cc-bg: #050B12;
-    --cc-surface: rgba(255, 255, 255, 0.03);
-    --cc-surface2: rgba(255, 255, 255, 0.06);
-    --cc-border: rgba(255, 255, 255, 0.08);
-    --cc-border2: rgba(255, 255, 255, 0.14);
-    --cc-cyan: #00E5FF;
-    --cc-purple: #7C3AED;
-    --cc-green: #10B981;
-    --cc-amber: #F59E0B;
-    --cc-pink: #F72585;
-    --cc-text: #E8F4F8;
-    --cc-muted: #5A8090;
-  }
-
-  body {
-    background-color: var(--cc-bg);
-    color: var(--cc-text);
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
+  body, #root {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
     width: 100%;
-    height: 100%;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size: 50px 50px;
-    background-position: center center;
-    pointer-events: none;
-    z-index: -1;
+    overflow-x: hidden;
   }
-
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #0a1520;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: var(--cc-cyan);
-    border-radius: 3px;
+  body {
+    @apply bg-cc-outer text-cc-text font-dm;
   }
 }
 
 @layer components {
-  .glass-card {
-    background-color: var(--cc-surface);
-    border: 1px solid var(--cc-border);
-    border-radius: 16px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  /* Dashboard layout wrappers */
+  .dashboard-wrapper {
+    @apply flex w-full relative min-h-screen p-4 md:p-6 lg:p-8;
+  }
+  .dashboard-main {
+    @apply bg-cc-bg w-full rounded-[40px] shadow-neo min-h-[calc(100vh-64px)] relative overflow-hidden;
   }
 
-  .glow-hover {
-    transition: all 0.25s ease;
+  .container-custom {
+    @apply max-w-7xl mx-auto px-6 lg:px-12 w-full;
   }
 
-  .glow-hover:hover {
-    box-shadow: var(--tw-shadow-glow-cyan, 0 0 30px rgba(0, 229, 255, 0.3));
-    transform: translateY(-4px);
+  /* Neo-brutalist buttons */
+  .btn-neo {
+    @apply inline-flex items-center justify-center font-dm font-bold text-sm px-6 py-3 rounded-full border-2 border-cc-border bg-cc-bg text-cc-text transition-all shadow-neo hover:shadow-neo-hover active:shadow-neo-active hover:-translate-y-0.5 active:translate-y-0.5 whitespace-nowrap;
   }
 
   .btn-primary {
-    @apply px-6 py-3 rounded-full font-semibold transition-all duration-300 inline-flex items-center justify-center gap-2;
-    background-color: var(--cc-cyan);
-    color: #000;
+    @apply btn-neo bg-cc-red text-white border-cc-border;
   }
-
-  .btn-primary:hover {
-    box-shadow: var(--tw-shadow-glow-cyan, 0 0 30px rgba(0, 229, 255, 0.3));
-    transform: translateY(-2px);
-  }
-
+  
   .btn-ghost {
-    @apply px-6 py-3 rounded-full font-semibold transition-all duration-300 inline-flex items-center justify-center gap-2;
-    background-color: transparent;
-    border: 1px solid var(--cc-cyan);
-    color: var(--cc-cyan);
+    @apply inline-flex items-center justify-center font-dm font-bold text-sm px-6 py-3 rounded-full border-2 border-transparent text-cc-muted transition-colors hover:text-cc-text hover:bg-cc-gray;
   }
 
-  .btn-ghost:hover {
-    background-color: rgba(0, 229, 255, 0.1);
+  /* Neo-brutalist cards */
+  .neo-card {
+    @apply rounded-[24px] border-2 border-cc-border bg-cc-bg p-6 shadow-neo transition-all;
+  }
+  .neo-card-yellow {
+    @apply neo-card bg-cc-yellow;
+  }
+  .neo-card-purple {
+    @apply neo-card bg-cc-purple;
+  }
+  .neo-card-blue {
+    @apply neo-card bg-cc-blue;
+  }
+  .neo-card-red {
+    @apply neo-card bg-cc-red text-white;
+  }
+  .neo-card-dark {
+    @apply neo-card bg-cc-darkcard text-white border-cc-darkcard shadow-none;
+  }
+
+  /* Text Gradients (Converted to solid for styling consistency with neo-brutalism) */
+  .text-gradient-cyan {
+    @apply text-cc-red;
+  }
+  .text-gradient-purple {
+    @apply text-cc-purple;
   }
 }
 
-@layer utilities {
-  .gradient-text {
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    background-image: linear-gradient(135deg, #00E5FF, #7C3AED);
-  }
+/* Base Headings */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-dm font-bold text-cc-text;
+}
+
+/* Marquee Support */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+/* Base styling */
+::selection {
+  background-color: #F4D35E;
+  color: #1A1A1A;
+}
+
+/* Disable generic scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1A1A1A;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333333;
 }
