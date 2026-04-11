@@ -2,113 +2,91 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Play, Code, ChevronLeft, ChevronRight, RotateCcw,
-    Box, Terminal, MessageSquare, Home, Map, Bot, Award,
-    Briefcase, FileText, LogOut, Code as CodeIcon
+    Box, Terminal, MessageSquare, Settings, Loader2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { careerMeta } from '../data/roadmaps';
-
-const navItems = [
-    { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Map, label: 'Roadmap', path: '/roadmap' },
-    { icon: Bot, label: 'AI Mentor', path: '/mentor' },
-    { icon: Award, label: 'Certifications', path: '/certifications' },
-    { icon: Briefcase, label: 'Internships', path: '/internships' },
-    { icon: CodeIcon, label: 'Visualizer', path: '/visualizer' },
-    { icon: FileText, label: 'Analyzer', path: '/analyzer' },
-    { icon: FileText, label: 'Resume', path: '/resume' },
-];
+import Sidebar from '../components/Sidebar';
+import ApiKeyModal, { useRequireApiKey } from '../components/ApiKeyModal';
+import { visualizeCode } from '../lib/api';
+import { hasApiKey } from '../lib/apiKeyStore';
 
 export default function CodeVisualizerPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const { currentUser, userProfile, logout } = useAuth();
-
-    const career = userProfile?.career || 'fullstack';
-    const xp = userProfile?.xp || 0;
-    const level = xp < 300 ? 1 : xp < 800 ? 2 : xp < 1500 ? 3 : xp < 2500 ? 4 : 5;
-    const meta = (careerMeta as any)[career] || (careerMeta as any).fullstack;
-    const displayName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'there';
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const { showModal, setShowModal, triggerCheck, onKeySubmitted } = useRequireApiKey();
 
     const [language, setLanguage] = useState('javascript');
     const [code, setCode] = useState('');
-    const [trace, setTrace] = useState<any[] | null>(null);
+    const [trace, setTrace] = useState<any | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleVisualize = async () => {
         if (!code.trim()) return;
+
+        if (!hasApiKey()) {
+            triggerCheck();
+            return;
+        }
+
         setLoading(true);
         setError('');
         setTrace(null);
         setCurrentStep(0);
+
         try {
-            const res = await fetch('http://localhost:5000/api/visualize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, language }),
-            });
-            const data = await res.json();
-            if (res.ok) setTrace(data);
-            else setError(data.error || 'Failed to capture execution trace.');
+            const result = await visualizeCode(code, language);
+
+            if (result.success && result.data) {
+                setTrace(result.data);
+            } else {
+                setError(result.error || 'Failed to visualize code. Please try again.');
+                if (result.error?.toLowerCase().includes('api key')) {
+                    setShowModal(true);
+                }
+            }
         } catch {
-            setError('Could not connect to the visualization backend. Please ensure the Python server is running.');
+            setError('Could not connect to the backend. Make sure the Python server is running.');
         } finally {
             setLoading(false);
         }
     };
 
-    const nextStep = () => { if (trace && currentStep < trace.length - 1) setCurrentStep(c => c + 1); };
+    const steps = trace?.steps || [];
+    const nextStep = () => { if (currentStep < steps.length - 1) setCurrentStep(c => c + 1); };
     const prevStep = () => { if (currentStep > 0) setCurrentStep(c => c - 1); };
 
-    const activeStepData = trace ? trace[currentStep] : null;
+    const activeStepData = steps[currentStep] || null;
     const codeLines = code.split('\n');
 
     return (
         <div className="min-h-screen bg-cc-bg flex font-dm">
-            {/* Sidebar */}
-            <aside className="w-64 shrink-0 bg-cc-outer flex flex-col py-6 px-4 gap-2 fixed h-full z-30 overflow-y-auto border-r-2 border-cc-border">
-                <Link to="/" className="flex items-center gap-2 px-3 mb-6">
-                    <span className="font-black text-xl text-white tracking-tight">CareerCraft<span className="text-cc-red">.</span></span>
-                </Link>
-                {navItems.map(({ icon: Icon, label, path }) => (
-                    <Link
-                        key={path} to={path}
-                        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all border-2 ${location.pathname === path
-                            ? 'bg-cc-yellow text-cc-text border-cc-yellow shadow-[2px_2px_0px_#FAFAFA]'
-                            : 'text-gray-400 border-transparent hover:text-white hover:bg-white/10'}`}
-                    >
-                        <Icon size={18} /> {label}
-                    </Link>
-                ))}
-                <div className="mt-auto flex flex-col gap-3">
-                    <div className="p-4 border-2 border-white/10 rounded-xl flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-cc-yellow border-2 border-cc-border flex items-center justify-center text-sm font-black text-cc-text shrink-0">
-                            {(currentUser?.displayName?.[0] || currentUser?.email?.[0] || 'U').toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="text-sm font-black text-white truncate">{currentUser?.displayName || 'User'}</div>
-                            <div className="text-xs text-gray-400 font-bold truncate">{currentUser?.email}</div>
-                        </div>
-                    </div>
-                    <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all w-full border-2 border-transparent">
-                        <LogOut size={16} /> Sign Out
-                    </button>
-                </div>
-            </aside>
+            <Sidebar />
 
-            {/* Main Content */}
+            <ApiKeyModal isOpen={showModal} onClose={() => setShowModal(false)} onKeySubmitted={onKeySubmitted} />
+
             <main className="ml-64 flex-1 p-8 h-screen flex flex-col bg-cc-bg">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-black text-cc-text flex items-center gap-3">
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-cc-yellow border-2 border-cc-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]">
                             <Code size={20} className="text-cc-text" />
                         </div>
-                        Code Visualizer
-                    </h1>
-                    <p className="text-cc-muted font-bold mt-1">See your code execute line by line, visually track variables and memory.</p>
+                        <div>
+                            <h1 className="text-3xl font-black text-cc-text">Code Visualizer</h1>
+                            <p className="text-cc-muted font-bold mt-0.5 text-sm">See your code execute line by line, visually track variables and memory.</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl border-2 border-cc-border transition-all shadow-[2px_2px_0px_#1A1A1A] ${
+                            hasApiKey() ? 'bg-green-100 text-green-700' : 'bg-cc-yellow text-cc-text'
+                        }`}
+                    >
+                        <Settings size={14} />
+                        {hasApiKey() ? 'Key Active' : 'Add API Key'}
+                    </button>
                 </div>
 
                 <div className="flex-1 neo-card bg-white flex flex-col min-h-0 shadow-[6px_6px_0px_#1A1A1A]">
@@ -158,8 +136,8 @@ export default function CodeVisualizerPage() {
                             >
                                 {loading ? (
                                     <>
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Tracing Execution...
+                                        <Loader2 size={20} className="animate-spin" />
+                                        Claude is tracing execution...
                                     </>
                                 ) : (
                                     <>
@@ -182,11 +160,11 @@ export default function CodeVisualizerPage() {
                                     <div className="px-2 py-1 bg-cc-yellow border-2 border-cc-border rounded-lg text-xs font-black uppercase shadow-[2px_2px_0px_#1A1A1A]">
                                         {language}
                                     </div>
-                                    <span className="text-sm font-bold text-cc-muted">Native Execution Engine</span>
+                                    <span className="text-sm font-bold text-cc-muted">Claude AI Execution Engine</span>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <span className="text-sm font-black text-cc-text font-mono px-3 py-1.5 bg-cc-gray border-2 border-cc-border rounded-xl">
-                                        Step {currentStep + 1} / {trace.length}
+                                        Step {currentStep + 1} / {steps.length}
                                     </span>
                                     <button
                                         onClick={prevStep}
@@ -197,7 +175,7 @@ export default function CodeVisualizerPage() {
                                     </button>
                                     <button
                                         onClick={nextStep}
-                                        disabled={currentStep === trace.length - 1}
+                                        disabled={currentStep === steps.length - 1}
                                         className="btn-neo bg-cc-red text-white text-sm flex items-center gap-1.5 px-6 py-2 disabled:opacity-30 shadow-[3px_3px_0px_#1A1A1A]"
                                     >
                                         Next Step <ChevronRight size={16} />
@@ -216,7 +194,7 @@ export default function CodeVisualizerPage() {
                                     <div className="flex-1 overflow-auto p-4 text-sm font-mono leading-[1.6]">
                                         {codeLines.map((lineText, i) => {
                                             const lineNum = i + 1;
-                                            const isActive = activeStepData && activeStepData.line === lineNum;
+                                            const isActive = activeStepData && (activeStepData.activeLine || activeStepData.line) === lineNum;
                                             return (
                                                 <div
                                                     key={i}
@@ -279,7 +257,7 @@ export default function CodeVisualizerPage() {
                                         </div>
                                         <div className="flex-1 overflow-auto bg-black/30 rounded-lg p-3 border border-white/10">
                                             <pre className="text-xs text-gray-300 font-mono whitespace-pre-wrap">
-                                                {activeStepData?.output || ''}
+                                                {activeStepData?.consoleOutput || activeStepData?.output || ''}
                                             </pre>
                                         </div>
                                     </div>

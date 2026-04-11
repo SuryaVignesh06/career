@@ -131,7 +131,7 @@ function HeroSection() {
                         Build My Roadmap <ArrowRight size={20} />
                     </Link>
                     <Link to="/login" className="btn-neo bg-white text-cc-text py-4 px-8 flex items-center gap-2 justify-center">
-                        See Demo
+                        Sign In
                     </Link>
                 </motion.div>
 

@@ -6,21 +6,18 @@ import {
     Map, Bot, FileText, Home, ChevronRight, Flame, Zap, Target,
     CheckCircle, Trophy, LogOut, Lock, BookOpen, Sparkles, Star,
     Briefcase, ExternalLink, Award, PenSquare, ChevronDown, ChevronUp,
-    Code, User
+    Code, User, Newspaper, BarChart2, Shield
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { roadmapData, careerMeta, careerCompletionData, getNextNode, getProgress, careerCertificationsData } from '../data/roadmaps';
+import Sidebar from '../components/Sidebar';
 
-const navItems = [
-    { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Map, label: 'Roadmap', path: '/roadmap' },
-    { icon: Bot, label: 'AI Mentor', path: '/mentor' },
-    { icon: Award, label: 'Certifications', path: '/certifications' },
-    { icon: Briefcase, label: 'Internships', path: '/internships' },
-    { icon: Code, label: 'Visualizer', path: '/visualizer' },
-    { icon: FileText, label: 'Analyzer', path: '/analyzer' },
-    { icon: FileText, label: 'Resume', path: '/resume' },
-];
+function getNodeStatus(nodeId: string, completedIds: string[], allIds: string[]) {
+    if (completedIds.includes(nodeId)) return 'done';
+    const idx = allIds.indexOf(nodeId);
+    if (idx === 0 || completedIds.includes(allIds[idx - 1])) return 'active';
+    return 'locked';
+}
 
 function xpToLevel(xp: number) {
     if (xp < 300) return 1;
@@ -32,13 +29,6 @@ function xpToLevel(xp: number) {
 }
 function xpForNextLevel(level: number) {
     return [300, 800, 1500, 2500, 4000][Math.min(level - 1, 4)] || level * 800;
-}
-
-function getNodeStatus(nodeId: string, completedIds: string[], allIds: string[]) {
-    if (completedIds.includes(nodeId)) return 'done';
-    const idx = allIds.indexOf(nodeId);
-    if (idx === 0 || completedIds.includes(allIds[idx - 1])) return 'active';
-    return 'locked';
 }
 
 export default function DashboardPage() {
@@ -55,11 +45,11 @@ export default function DashboardPage() {
     const xpProgress = Math.min(100, Math.round((xp / nextLevelXp) * 100));
     const activity: any[] = userProfile?.activityLog || [];
     const progress = getProgress(career, completedIds);
-    const meta = careerMeta[career] || careerMeta.fullstack;
+    const meta = careerMeta[career] || careerMeta.fullstack || { label: 'Career', salary: 'N/A' };
     const nextNode = getNextNode(career, completedIds);
     const isComplete = progress === 100;
-    const completion = careerCompletionData[career] || careerCompletionData.fullstack;
-    const userCerts = careerCertificationsData[career] || careerCertificationsData.fullstack;
+    const completion = careerCompletionData[career] || careerCompletionData.fullstack || { jobRoles: [], resumeSkills: [], resumeTips: [] };
+    const userCerts = careerCertificationsData[career] || careerCertificationsData.fullstack || [];
     const [expandedRole, setExpandedRole] = useState<number | null>(null);
 
     const allPhases = roadmapData[career] || roadmapData.fullstack;
@@ -114,107 +104,61 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-cc-bg flex font-dm">
-            {/* ── Neo-Brutalist Sidebar ────────────────── */}
-            <aside className="w-64 shrink-0 bg-cc-outer flex flex-col py-6 px-4 gap-2 fixed h-full z-30 overflow-y-auto border-r-2 border-cc-border">
-                <Link to="/" className="flex items-center gap-2 px-3 mb-6">
-                    <span className="font-black text-xl text-white tracking-tight">CareerCraft<span className="text-cc-red">.</span></span>
-                </Link>
+            <Sidebar />
 
-                {navItems.map(({ icon: Icon, label, path }) => (
-                    <Link
-                        key={path} to={path}
-                        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all border-2 ${location.pathname === path
-                            ? 'bg-cc-yellow text-cc-text border-cc-yellow shadow-[2px_2px_0px_#FAFAFA]'
-                            : 'text-gray-400 border-transparent hover:text-white hover:bg-white/10'}`}
-                    >
-                        <Icon size={18} /> {label}
-                    </Link>
-                ))}
-
-                {/* User + XP + Logout */}
-                <div className="mt-auto flex flex-col gap-3">
-                    <div className="p-4 border-2 border-white/10 rounded-xl flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-cc-yellow border-2 border-cc-border flex items-center justify-center text-sm font-black text-cc-text shrink-0">
-                            {(currentUser?.displayName?.[0] || currentUser?.email?.[0] || 'U').toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="text-sm font-black text-white truncate">{currentUser?.displayName || 'User'}</div>
-                            <div className="text-xs text-gray-400 font-bold truncate">{currentUser?.email}</div>
-                        </div>
-                    </div>
-
-                    {/* XP bar */}
-                    <div className="p-4 border-2 border-white/10 rounded-xl flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-gray-400">Level {level}</span>
-                            <span className="text-xs font-black text-cc-yellow">{xp} XP</span>
-                        </div>
-                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/20">
-                            <motion.div
-                                className="h-full bg-cc-yellow rounded-full"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${xpProgress}%` }}
-                                transition={{ duration: 0.8 }}
-                            />
-                        </div>
-                        <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-1 text-gray-400">
-                                <Flame size={12} className="text-orange-400" />
-                                <span className="text-white font-black">{streak}</span> day streak
-                            </div>
-                            <span className="text-gray-500 font-bold">{nextLevelXp - xp} XP to next</span>
-                        </div>
-                    </div>
-
-                    {/* Career badge */}
-                    <div className="px-3 py-2 rounded-xl border border-white/10 text-xs flex items-center gap-2">
-                        <User size={14} className="text-cc-yellow" />
-                        <span className="text-white font-black">{meta.label}</span>
-                    </div>
-
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all w-full border-2 border-transparent"
-                    >
-                        <LogOut size={16} /> Sign Out
-                    </button>
-                </div>
-            </aside>
+            {/* ── Main Content ────────────────────────── */}
 
             {/* ── Main Content ────────────────────────── */}
             <main className="ml-64 flex-1 p-8 overflow-y-auto bg-cc-bg">
                 {/* Greeting */}
                 <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                     <h1 className="text-3xl font-black text-cc-text">
-                        {streak > 0 ? `Day ${streak} Streak! ` : ''}Welcome{streak > 0 ? '' : ' back'}, {displayName}!
+                        {streak > 0 ? `Day ${streak} Streak! ` : ''}Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {displayName}!
                     </h1>
-                    <p className="text-cc-muted font-bold mt-1">
-                        {isNew
-                            ? "You're all set! Let's start your journey."
-                            : completedIds.length === 0
-                            ? 'Start your first module to earn XP and build momentum.'
-                            : `${completedIds.length} module${completedIds.length !== 1 ? 's' : ''} done · ${progress}% roadmap complete`}
+                    <p className="text-cc-muted font-bold mt-1 uppercase tracking-tight text-sm">
+                        Learning Speed: <span className="text-cc-red">{userProfile?.learningSpeed || 'Standard'}</span> · 
+                        Status: <span className="text-cc-purple">{((userProfile?.status as string) || 'Searching').replace('_', ' ')}</span>
                     </p>
                 </motion.div>
 
-                {/* New user CTA */}
-                {completedIds.length === 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                        className="mb-8 neo-card neo-card-yellow flex items-center gap-6 p-6"
-                    >
-                        <div className="w-14 h-14 rounded-2xl bg-cc-red border-2 border-cc-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
-                            <Sparkles size={28} className="text-white" />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="font-black text-cc-text text-lg mb-1">Your {meta.label} roadmap is ready!</h3>
-                            <p className="text-cc-text/70 font-bold text-sm">You're starting at Level 1 with 0 XP. Complete modules to level up and track your progress.</p>
-                        </div>
-                        <Link to="/roadmap" className="btn-neo bg-cc-red text-white shrink-0 text-sm flex items-center gap-2 shadow-[4px_4px_0px_#1A1A1A]">
-                            <Sparkles size={14} /> Start Learning
-                        </Link>
-                    </motion.div>
-                )}
+                {/* AI Behavioral Gauges */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    {[
+                        { label: 'Focus', value: userProfile?.behavioralTraits?.focus || 5, icon: Target, color: 'text-blue-500', desc: 'Tasks per day' },
+                        { label: 'Discipline', value: userProfile?.behavioralTraits?.discipline || 5, icon: Shield, color: 'text-purple-500', desc: 'Streak & Consistency' },
+                        { label: 'Consistency', value: userProfile?.behavioralTraits?.consistency || 5, icon: Zap, color: 'text-cc-yellow', desc: 'Daily activity' },
+                        { label: 'Drive', value: Math.min(10, (streak / 5) + 5), icon: Flame, color: 'text-cc-red', desc: 'Momentum level' },
+                    ].map((trait, i) => (
+                        <motion.div
+                            key={trait.label}
+                            className="neo-card bg-white p-4 flex flex-col items-center text-center gap-2"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                        >
+                            <div className="relative w-20 h-20 mb-1">
+                                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F1F1F1" strokeWidth="3" />
+                                    <motion.circle
+                                        cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="3"
+                                        strokeDasharray={`${trait.value * 10} 100`}
+                                        className={trait.color}
+                                        initial={{ strokeDasharray: '0 100' }}
+                                        animate={{ strokeDasharray: `${trait.value * 10} 100` }}
+                                        transition={{ duration: 1.5, delay: 0.5 + i * 0.1 }}
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-xl font-black text-cc-text">{trait.value}</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-cc-text font-black text-xs uppercase tracking-widest">
+                                <trait.icon size={12} className={trait.color} /> {trait.label}
+                            </div>
+                            <span className="text-[10px] font-bold text-cc-muted italic">{trait.desc}</span>
+                        </motion.div>
+                    ))}
+                </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -288,8 +232,44 @@ export default function DashboardPage() {
 
                     {/* Right column */}
                     <div className="flex flex-col gap-6">
-                        {/* Activity */}
-                        <motion.div className="neo-card bg-white" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                        {/* Balance Engine */}
+                        <motion.div className="neo-card bg-cc-outer text-white border-cc-border" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                                    <BarChart2 size={16} className="text-cc-yellow" /> Balance Engine
+                                </h2>
+                                <span className="text-[10px] font-bold bg-cc-yellow text-cc-text px-2 py-0.5 rounded">OPTIMIZING</span>
+                            </div>
+                            
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold mb-1.5">
+                                        <span>Primary: {meta.label}</span>
+                                        <span className="text-cc-yellow">80% Focus</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-white/10 rounded-full border border-white/20 overflow-hidden">
+                                        <div className="h-full bg-cc-yellow w-[80%]" />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold mb-1.5">
+                                        <span>Secondary Domains</span>
+                                        <span className="text-cc-blue">20% Focus</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-white/10 rounded-full border border-white/20 overflow-hidden">
+                                        <div className="h-full bg-cc-blue w-[20%]" />
+                                    </div>
+                                </div>
+
+                                <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                                    "Your secondary competence in <span className="text-white">AI/ML</span> and <span className="text-white">DevOps</span> keeps you in the top 5% of adaptable talent."
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        {/* Recent Activity */}
+                        <motion.div className="neo-card bg-white" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
                             <h2 className="font-black text-cc-text text-lg mb-4">Recent Activity</h2>
                             {activity.length === 0 ? (
                                 <div className="text-center py-6">
@@ -314,28 +294,28 @@ export default function DashboardPage() {
                             )}
                         </motion.div>
 
-                        {/* Next up */}
-                        <motion.div className="neo-card bg-white" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                            <div className="flex items-center gap-2 mb-3">
-                                <Trophy size={18} className="text-cc-red" />
-                                <h2 className="font-black text-cc-text">Next Up</h2>
+                        {/* Intelligence Feed Preview */}
+                        <motion.div className="neo-card bg-white border-t-4 border-t-cc-red" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="font-black text-cc-text flex items-center gap-2">
+                                    <Newspaper size={18} className="text-cc-red" /> Live Intel
+                                </h2>
+                                <Link to="/feed" className="text-[10px] font-black text-cc-red hover:underline uppercase">Full Feed →</Link>
                             </div>
-                            {nextNode ? (
-                                <>
-                                    <p className="text-sm font-black text-cc-text mb-1">{nextNode.title}</p>
-                                    <p className="text-xs font-bold text-cc-muted mb-4">Est. {nextNode.time} · +{nextNode.xp} XP</p>
-                                    <Link to="/roadmap" className="btn-neo bg-cc-red text-white w-full flex items-center justify-center gap-1 py-2.5 text-sm shadow-[3px_3px_0px_#1A1A1A]">
-                                        Continue Learning <ChevronRight size={16} />
-                                    </Link>
-                                </>
-                            ) : (
-                                <div className="flex flex-col gap-3">
-                                    <p className="text-sm font-black text-green-600">Roadmap complete! You're a legend.</p>
-                                    <a href="#completion-section" className="btn-neo bg-cc-yellow w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-                                        <Briefcase size={14} /> View Job Opportunities
-                                    </a>
-                                </div>
-                            )}
+                            <div className="flex flex-col gap-3">
+                                {[
+                                    { title: "React 19 RC Released", time: "2h ago", tag: "Frontend" },
+                                    { title: "Nvidia B200 Chip Impact", time: "5h ago", tag: "AI ML" }
+                                ].map((news, i) => (
+                                    <div key={i} className="p-2.5 rounded-lg bg-cc-gray hover:bg-cc-yellow/10 border border-cc-border transition-colors">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className="text-[10px] font-black text-cc-muted uppercase">{news.tag}</span>
+                                            <span className="text-[9px] font-bold text-cc-muted">{news.time}</span>
+                                        </div>
+                                        <p className="text-xs font-black text-cc-text leading-tight">{news.title}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </motion.div>
                     </div>
                 </div>

@@ -1,39 +1,83 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getFunctions } from 'firebase/functions';
+import {
+    getAuth,
+    GoogleAuthProvider,
+    GithubAuthProvider,
+    signInWithPopup,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile,
+} from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'demo-key',
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'demo.firebaseapp.com',
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'demo-project',
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'demo.appspot.com',
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '000000000000',
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:000000000000:web:0000000000000000'
+    apiKey: "AIzaSyDJXs4PM76eBxilUJUjOg7PxgRrvq49ddQ",
+    authDomain: "careercraft-717aa.firebaseapp.com",
+    projectId: "careercraft-717aa",
+    storageBucket: "careercraft-717aa.firebasestorage.app",
+    messagingSenderId: "771197209369",
+    appId: "1:771197209369:web:79b485a9bc0560ff205388",
+    measurementId: "G-Z9CHQYZ5B1"
 };
 
-let app, auth, db, functions, storage, googleProvider;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
+const githubProvider = new GithubAuthProvider();
 
-try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    functions = getFunctions(app);
-    storage = getStorage(app);
-    googleProvider = new GoogleAuthProvider();
-} catch (e) {
-    console.warn('Firebase initialization failed (likely missing .env config). Auth features will be disabled.', e);
-    // Provide stub objects so imports don't crash
-    auth = { onAuthStateChanged: (cb) => { cb(null); return () => {}; } };
-    db = null;
-    functions = null;
-    storage = null;
-    googleProvider = null;
+// ── Auth Functions ────────────────────────────────────────────────────────────
+
+/** Sign up with email + password, then set displayName */
+export async function registerWithEmail(email, password, displayName) {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName });
+    return cred.user;
 }
 
-export { auth, db, functions, storage, googleProvider };
-export const loginWithGoogle = () => Promise.reject(new Error('Firebase not configured'));
-export const registerWithEmail = (email, password) => Promise.reject(new Error('Firebase not configured'));
-export const loginWithEmail = (email, password) => Promise.reject(new Error('Firebase not configured'));
-export const logoutUser = () => Promise.reject(new Error('Firebase not configured'));
+/** Sign in with email + password */
+export async function loginWithEmail(email, password) {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    return cred.user;
+}
+
+/** Sign in with Google popup */
+export async function loginWithGoogle() {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+}
+
+/** Sign in with GitHub popup */
+export async function loginWithGitHub() {
+    const result = await signInWithPopup(auth, githubProvider);
+    return result.user;
+}
+
+/** Sign out */
+export async function logoutUser() {
+    return signOut(auth);
+}
+
+// ── Firestore Helpers ─────────────────────────────────────────────────────────
+
+/** Get user profile from Firestore */
+export async function getUserProfile(uid) {
+    const snap = await getDoc(doc(db, 'users', uid));
+    return snap.exists() ? snap.data() : null;
+}
+
+/** Create or overwrite user profile in Firestore */
+export async function setUserProfile(uid, data) {
+    await setDoc(doc(db, 'users', uid), data, { merge: true });
+}
+
+/** Update specific fields in user profile */
+export async function updateUserProfile(uid, updates) {
+    await updateDoc(doc(db, 'users', uid), updates);
+}
+
+export { app, auth, db, storage, googleProvider, githubProvider };

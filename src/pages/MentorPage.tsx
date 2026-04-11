@@ -1,19 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Map, Bot, FileText, Send, Award, Briefcase, Code, Target, PenSquare } from 'lucide-react';
+import { Bot, Send, Settings } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-const navItems = [
-    { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Map, label: 'Roadmap', path: '/roadmap' },
-    { icon: Bot, label: 'AI Mentor', path: '/mentor' },
-    { icon: Award, label: 'Certifications', path: '/certifications' },
-    { icon: Briefcase, label: 'Internships', path: '/internships' },
-    { icon: Code, label: 'Visualizer', path: '/visualizer' },
-    { icon: Target, label: 'Analyzer', path: '/analyzer' },
-    { icon: PenSquare, label: 'Resume', path: '/resume' },
-];
+import Sidebar from '../components/Sidebar';
+import ApiKeyModal, { useRequireApiKey } from '../components/ApiKeyModal';
+import { chatWithMentor } from '../lib/api';
+import { hasApiKey } from '../lib/apiKeyStore';
+import { useAuth } from '../contexts/AuthContext';
 
 const suggestions = [
     "What should I learn after React?",
@@ -22,72 +17,75 @@ const suggestions = [
     "Explain closures in JavaScript"
 ];
 
-const initialMessages = [];
-
 export default function MentorPage() {
     const location = useLocation();
-    const [messages, setMessages] = useState(initialMessages);
+    const { userProfile } = useAuth();
+    const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const bottomRef = useRef(null);
+    const bottomRef = useRef<HTMLDivElement>(null);
+    const { showModal, setShowModal, apiKeyReady, triggerCheck, onKeySubmitted } = useRequireApiKey();
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, loading]);
 
-    const getAIResponse = async (chatMessages) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/chat', {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ messages: chatMessages })
-            });
-            const data = await response.json();
-            if (data.response) {
-                 return data.response;
-            } else {
-                 return "Sorry, I encountered an error. Please check the backend.";
-            }
-        } catch (error) {
-            console.error("Backend Error:", error);
-            return "Please ensure the AI backend is running.";
-        }
-    };
-
     const sendMessage = async (text = input) => {
         if (!text.trim()) return;
-        const userMsg = { role: 'user', text };
+
+        // Check for API key — show popup if missing
+        if (!hasApiKey()) {
+            triggerCheck();
+            return;
+        }
+
+        const userMsg = { role: 'user' as const, text };
         const newMessages = [...messages, userMsg];
         setMessages(newMessages);
         setInput('');
         setLoading(true);
 
-        const aiResponse = await getAIResponse(newMessages);
-        
-        setMessages(prev => [...prev, { role: 'assistant', text: aiResponse }]);
-        setLoading(false);
+        try {
+            const userContext = {
+                career: userProfile?.career || 'fullstack',
+                status: userProfile?.status || 'engineering student',
+                completedNodes: userProfile?.completedNodes || [],
+                xp: userProfile?.xp || 0,
+                level: userProfile?.level || 1,
+                streak: userProfile?.streak || 0,
+            };
+
+            const result = await chatWithMentor(newMessages, userContext);
+
+            if (result.success && result.message) {
+                setMessages(prev => [...prev, { role: 'assistant', text: result.message }]);
+            } else {
+                const errMsg = result.error || 'Something went wrong. Please try again.';
+                setMessages(prev => [...prev, { role: 'assistant', text: `⚠️ ${errMsg}` }]);
+
+                // If it's an API key error, show the popup
+                if (errMsg.toLowerCase().includes('api key')) {
+                    setTimeout(() => setShowModal(true), 1000);
+                }
+            }
+        } catch (error) {
+            setMessages(prev => [...prev, { role: 'assistant', text: '⚠️ Could not connect to the backend. Make sure the Python server is running.' }]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="bg-cc-outer min-h-[100vh] w-full flex p-4 font-dm border-box overflow-hidden">
             
-            {/* Sidebar */}
-            <aside className="w-64 hidden xl:flex flex-col gap-6 py-6 px-4 fixed h-[calc(100vh-2rem)] shrink-0 z-30">
-                <Link to="/dashboard" className="flex items-center gap-2 px-3 mb-4">
-                    <span className="font-bold text-2xl text-white tracking-tight">CareerCraft<span className="text-cc-red">.</span></span>
-                </Link>
+            <Sidebar />
 
-                <nav className="flex flex-col gap-2">
-                    {navItems.map(({ icon: Icon, label, path }) => {
-                        const isActive = location.pathname.includes(path);
-                        return (
-                            <Link key={path} to={path} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all border-2 ${isActive ? 'bg-cc-yellow border-cc-border text-cc-text shadow-[2px_2px_0px_#1A1A1A]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-                                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} /> {label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </aside>
+            {/* API Key Modal */}
+            <ApiKeyModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onKeySubmitted={onKeySubmitted}
+            />
 
             {/* Chat Area - Neo Brutalist Style */}
             <main className="dashboard-main xl:ml-[280px] flex flex-col relative !p-0">
@@ -100,9 +98,22 @@ export default function MentorPage() {
                         </div>
                         <div>
                             <h1 className="font-bold text-lg leading-tight">CareerCraft Mentor</h1>
-                            <p className="text-xs font-bold text-cc-muted tracking-wide uppercase">AI Guided Learning</p>
+                            <p className="text-xs font-bold text-cc-muted tracking-wide uppercase">
+                                Powered by Claude AI
+                            </p>
                         </div>
                     </div>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl border-2 border-cc-border transition-all shadow-[2px_2px_0px_#1A1A1A] hover:-translate-y-0.5 ${
+                            apiKeyReady
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-cc-yellow text-cc-text animate-pulse'
+                        }`}
+                    >
+                        <Settings size={14} />
+                        {apiKeyReady ? 'Key Active' : 'Add API Key'}
+                    </button>
                 </div>
 
                 {/* Messages Container */}
@@ -113,7 +124,12 @@ export default function MentorPage() {
                                 <div className="w-20 h-20 border-2 border-cc-border bg-cc-yellow rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_#1A1A1A] mb-8">
                                     <Bot size={40} className="text-cc-text" />
                                 </div>
-                                <h2 className="text-3xl font-bold text-cc-text mb-8">How can I help you today?</h2>
+                                <h2 className="text-3xl font-bold text-cc-text mb-3">How can I help you today?</h2>
+                                {!apiKeyReady && (
+                                    <p className="text-sm font-bold text-cc-red mb-6 bg-cc-red/10 px-4 py-2 rounded-xl border-2 border-cc-red/20">
+                                        ⚡ Add your Anthropic API key above to start chatting
+                                    </p>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
                                     {suggestions.map((s, idx) => (
                                         <button 

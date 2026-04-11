@@ -5,16 +5,7 @@ import { Home, Map, Bot, FileText, CheckCircle, Lock, ChevronRight, Clock, BookO
 import { useAuth } from '../contexts/AuthContext';
 import { roadmapData, careerMeta, getProgress } from '../data/roadmaps';
 
-const navItems = [
-    { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Map, label: 'Roadmap', path: '/roadmap' },
-    { icon: Bot, label: 'AI Mentor', path: '/mentor' },
-    { icon: Award, label: 'Certifications', path: '/certifications' },
-    { icon: Briefcase, label: 'Internships', path: '/internships' },
-    { icon: Code, label: 'Visualizer', path: '/visualizer' },
-    { icon: Target, label: 'Analyzer', path: '/analyzer' },
-    { icon: PenSquare, label: 'Resume', path: '/resume' },
-];
+import Sidebar from '../components/Sidebar';
 
 function getNodeStatus(nodeId, completedIds, allIds) {
     if (completedIds.includes(nodeId)) return 'done';
@@ -30,52 +21,60 @@ export default function RoadmapPage() {
     const location = useLocation();
     const [expanded, setExpanded] = useState(null);
     const { userProfile, updateProfile } = useAuth();
+    
+    // Domain Selection
+    const primaryDomain = userProfile?.career || 'fullstack';
+    const secondaryDomains = userProfile?.secondaryDomains || [];
+    const allUserDomains = [primaryDomain, ...secondaryDomains];
+    const [activeDomain, setActiveDomain] = useState(primaryDomain);
 
-    const career = userProfile?.career || 'fullstack';
-    const completedIds = userProfile?.completedNodes || [];
+    const isPrimary = activeDomain === primaryDomain;
+    const completedIds = isPrimary 
+        ? (userProfile?.completedNodes || []) 
+        : (userProfile?.secondaryProgress?.[activeDomain] || []);
+    
     const xp = userProfile?.xp || 0;
     const activity = userProfile?.activityLog || [];
 
-    const meta = careerMeta[career] || careerMeta.fullstack;
-    const phases = roadmapData[career] || roadmapData.fullstack;
-    const allNodes = phases.flatMap(p => p.items);
-    const allIds = allNodes.map(n => n.id);
-    const progress = getProgress(career, completedIds);
+    const meta = careerMeta[activeDomain] || careerMeta.fullstack;
+    const phases = roadmapData[activeDomain] || roadmapData.fullstack;
+    const allNodes = phases.flatMap((p) => p.items);
+    const allIds = allNodes.map((n) => n.id);
+    const progress = getProgress(activeDomain, completedIds);
     const totalXPAvailable = allNodes.reduce((sum, n) => sum + n.xp, 0);
 
     const markComplete = (node) => {
         if (completedIds.includes(node.id)) return;
         const gainedXp = node.xp;
-        updateProfile({
-            completedNodes: [...completedIds, node.id],
+        
+        const updates = {
             xp: xp + gainedXp,
             activityLog: [
-                { action: `Completed "${node.title}"`, xp: `+${gainedXp} XP`, timestamp: new Date().toISOString() },
+                { 
+                    action: `Completed "${node.title}" in ${meta.label}`, 
+                    xp: `+${gainedXp} XP`, 
+                    timestamp: new Date().toISOString() 
+                },
                 ...activity.slice(0, 9),
             ],
-        });
+        };
+
+        if (isPrimary) {
+            updates.completedNodes = [...completedIds, node.id];
+        } else {
+            updates.secondaryProgress = {
+                ...(userProfile?.secondaryProgress || {}),
+                [activeDomain]: [...completedIds, node.id]
+            };
+        }
+
+        updateProfile(updates);
     };
 
     return (
         <div className="bg-cc-outer min-h-[100vh] w-full flex p-4 font-dm border-box overflow-hidden">
             
-            {/* Sidebar */}
-            <aside className="w-64 hidden xl:flex flex-col gap-6 py-6 px-4 fixed h-[calc(100vh-2rem)] shrink-0 z-30">
-                <Link to="/dashboard" className="flex items-center gap-2 px-3 mb-4">
-                    <span className="font-bold text-2xl text-white tracking-tight">CareerCraft<span className="text-cc-red">.</span></span>
-                </Link>
-
-                <nav className="flex flex-col gap-2">
-                    {navItems.map(({ icon: Icon, label, path }) => {
-                        const isActive = location.pathname.includes(path);
-                        return (
-                            <Link key={path} to={path} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all border-2 ${isActive ? 'bg-cc-yellow border-cc-border text-cc-text shadow-[2px_2px_0px_#1A1A1A]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-                                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} /> {label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </aside>
+            <Sidebar />
 
             {/* Main Content Area */}
             <main className="dashboard-main xl:ml-[280px]">

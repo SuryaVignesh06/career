@@ -1,30 +1,19 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Map, Bot, FileText, Download, Wand2, CheckCircle, Plus, Trash2, Award, Briefcase, Code, Target, PenSquare, FileDown } from 'lucide-react';
+import { Wand2, CheckCircle, Plus, Trash2, FileDown, Settings, Loader2 } from 'lucide-react';
 
-const navItems = [
-    { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Map, label: 'Roadmap', path: '/roadmap' },
-    { icon: Bot, label: 'AI Mentor', path: '/mentor' },
-    { icon: Award, label: 'Certifications', path: '/certifications' },
-    { icon: Briefcase, label: 'Internships', path: '/internships' },
-    { icon: Code, label: 'Visualizer', path: '/visualizer' },
-    { icon: Target, label: 'Analyzer', path: '/analyzer' },
-    { icon: PenSquare, label: 'Resume', path: '/resume' },
-];
-
-const atsScore = 84;
-const atsTips = [
-    { tip: 'Add measurable metrics to "Built a web app"', done: false },
-    { tip: 'Include keywords: React, REST API, Database', done: false },
-    { tip: 'Phone number missing from contact section', done: false },
-    { tip: 'Skills section is well-structured', done: true },
-    { tip: 'Education section includes valid CGPA', done: true },
-];
+import Sidebar from '../components/Sidebar';
+import ApiKeyModal, { useRequireApiKey } from '../components/ApiKeyModal';
+import { scoreResume, improveSummary } from '../lib/api';
+import { hasApiKey } from '../lib/apiKeyStore';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ResumePage() {
     const location = useLocation();
+    const { userProfile } = useAuth();
+    const { showModal, setShowModal, triggerCheck, onKeySubmitted } = useRequireApiKey();
+
     const [form, setForm] = useState({
         name: 'Chaitu Reddy',
         email: 'chaitu@gmail.com',
@@ -40,30 +29,75 @@ export default function ResumePage() {
         education: 'B.Tech Computer Science | XYZ University | 2022-2026 | CGPA: 8.4',
     });
 
-    const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+    // ATS Score state
+    const [atsScore, setAtsScore] = useState(84);
+    const [atsRating, setAtsRating] = useState('GOOD');
+    const [atsTips, setAtsTips] = useState([
+        { item: 'Add measurable metrics to "Built a web app"', passed: false, suggestion: 'Quantify impact: "Built a web app serving 200+ users"' },
+        { item: 'Include keywords: React, REST API, Database', passed: false, suggestion: 'Add missing keywords relevant to your target role' },
+        { item: 'Phone number missing from contact section', passed: false, suggestion: 'Add your phone number for recruiter contact' },
+        { item: 'Skills section is well-structured', passed: true, suggestion: 'Good — skills are comma-separated and scannable' },
+        { item: 'Education section includes valid CGPA', passed: true, suggestion: 'CGPA is included — this is great for freshers' },
+    ]);
+
+    const [scoring, setScoring] = useState(false);
+    const [improving, setImproving] = useState(false);
+
+    const set = (key: string, val: any) => setForm(f => ({ ...f, [key]: val }));
+
+    const handleAIScore = async () => {
+        if (!hasApiKey()) { triggerCheck(); return; }
+        setScoring(true);
+        try {
+            const result = await scoreResume({
+                ...form,
+                career: userProfile?.career || 'Full Stack Developer',
+            });
+            if (result.success && result.data) {
+                setAtsScore(result.data.atsScore ?? 0);
+                setAtsRating(result.data.rating ?? 'FAIR');
+                if (result.data.checks) {
+                    setAtsTips(result.data.checks);
+                }
+            } else if (result.error?.toLowerCase().includes('api key')) {
+                setShowModal(true);
+            }
+        } catch { /* handled by api client */ }
+        setScoring(false);
+    };
+
+    const handleAIImprove = async () => {
+        if (!hasApiKey()) { triggerCheck(); return; }
+        setImproving(true);
+        try {
+            const result = await improveSummary({
+                summary: form.summary,
+                career: userProfile?.career || 'Full Stack Developer',
+                skills: form.skills,
+            });
+            if (result.success && result.data?.improvedSummary) {
+                set('summary', result.data.improvedSummary);
+            } else if (result.error?.toLowerCase().includes('api key')) {
+                setShowModal(true);
+            }
+        } catch { /* handled by api client */ }
+        setImproving(false);
+    };
+
+    const ratingColor: Record<string, string> = {
+        POOR: 'text-cc-red',
+        FAIR: 'text-orange-500',
+        GOOD: 'text-green-600',
+        EXCELLENT: 'text-green-500',
+    };
 
     return (
         <div className="bg-cc-outer min-h-[100vh] w-full flex p-4 font-dm border-box overflow-hidden">
             
-            {/* Sidebar */}
-            <aside className="w-64 hidden xl:flex flex-col gap-6 py-6 px-4 fixed h-[calc(100vh-2rem)] shrink-0 z-30">
-                <Link to="/dashboard" className="flex items-center gap-2 px-3 mb-4">
-                    <span className="font-bold text-2xl text-white tracking-tight">CareerCraft<span className="text-cc-red">.</span></span>
-                </Link>
+            <Sidebar />
 
-                <nav className="flex flex-col gap-2">
-                    {navItems.map(({ icon: Icon, label, path }) => {
-                        const isActive = location.pathname.includes(path);
-                        return (
-                            <Link key={path} to={path} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all border-2 ${isActive ? 'bg-cc-yellow border-cc-border text-cc-text shadow-[2px_2px_0px_#1A1A1A]' : 'border-transparent text-gray-400 hover:text-white'}`}>
-                                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} /> {label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </aside>
+            <ApiKeyModal isOpen={showModal} onClose={() => setShowModal(false)} onKeySubmitted={onKeySubmitted} />
 
-            {/* Main Content Area */}
             <main className="dashboard-main xl:ml-[280px]">
                 <div className="p-8 lg:p-12 pb-24 overflow-y-auto h-full max-w-6xl mx-auto">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -86,10 +120,10 @@ export default function ResumePage() {
                                 <div className="neo-card bg-white p-8">
                                     <h3 className="font-bold text-xl text-cc-text mb-6">Personal Info</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                        {[['name', 'Full Name'], ['email', 'Email Address'], ['phone', 'Phone Number'], ['linkedin', 'LinkedIn Profile'], ['github', 'GitHub URL']].map(([key, label]) => (
+                                        {([['name', 'Full Name'], ['email', 'Email Address'], ['phone', 'Phone Number'], ['linkedin', 'LinkedIn Profile'], ['github', 'GitHub URL']] as const).map(([key, label]) => (
                                             <div key={key} className={key === 'name' ? 'sm:col-span-2' : ''}>
                                                 <label className="text-xs font-bold text-cc-text uppercase tracking-widest mb-2 block">{label}</label>
-                                                <input value={form[key]} onChange={e => set(key, e.target.value)} className="w-full bg-white border-2 border-cc-border rounded-xl py-3 px-4 text-cc-text font-bold placeholder:text-cc-muted focus:outline-none focus:bg-cc-yellow/10 transition-colors shadow-[2px_2px_0px_transparent] focus:shadow-[2px_2px_0px_#1A1A1A]" />
+                                                <input value={(form as any)[key]} onChange={e => set(key, e.target.value)} className="w-full bg-white border-2 border-cc-border rounded-xl py-3 px-4 text-cc-text font-bold placeholder:text-cc-muted focus:outline-none focus:bg-cc-yellow/10 transition-colors shadow-[2px_2px_0px_transparent] focus:shadow-[2px_2px_0px_#1A1A1A]" />
                                             </div>
                                         ))}
                                     </div>
@@ -99,8 +133,13 @@ export default function ResumePage() {
                                 <div className="neo-card bg-white p-8">
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="font-bold text-xl text-cc-text">Professional Summary</h3>
-                                        <button className="flex items-center gap-2 text-xs font-bold text-cc-bg uppercase tracking-wide bg-cc-text px-3 py-1.5 rounded-lg hover:bg-cc-red transition-colors shadow-[2px_2px_0px_#1A1A1A]">
-                                            <Wand2 size={14} /> AI Improve
+                                        <button
+                                            onClick={handleAIImprove}
+                                            disabled={improving}
+                                            className="flex items-center gap-2 text-xs font-bold text-cc-bg uppercase tracking-wide bg-cc-text px-3 py-1.5 rounded-lg hover:bg-cc-red transition-colors shadow-[2px_2px_0px_#1A1A1A] disabled:opacity-50"
+                                        >
+                                            {improving ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                                            {improving ? 'Improving...' : 'AI Improve'}
                                         </button>
                                     </div>
                                     <textarea value={form.summary} onChange={e => set('summary', e.target.value)} rows={3} className="w-full bg-white border-2 border-cc-border rounded-xl py-4 px-4 text-cc-text font-bold focus:outline-none focus:bg-cc-yellow/10 transition-colors resize-none shadow-[2px_2px_0px_transparent] focus:shadow-[2px_2px_0px_#1A1A1A]" />
@@ -162,6 +201,7 @@ export default function ResumePage() {
                                                     initial={{ strokeDasharray: '0 100' }}
                                                     animate={{ strokeDasharray: `${atsScore} ${100 - atsScore}` }}
                                                     transition={{ duration: 1.5, delay: 0.3 }}
+                                                    key={atsScore}
                                                 />
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -170,23 +210,34 @@ export default function ResumePage() {
                                             </div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="bg-cc-bg border-2 border-cc-border px-4 py-1.5 rounded-md font-black text-green-600 shadow-[2px_2px_0px_#1A1A1A] inline-block mb-2">GOOD RATING</div>
-                                            <div className="text-xs font-bold text-cc-text/80 leading-tight">Fix 3 issues to heavily increase <br/> screening pass rate.</div>
+                                            <div className={`bg-cc-bg border-2 border-cc-border px-4 py-1.5 rounded-md font-black shadow-[2px_2px_0px_#1A1A1A] inline-block mb-2 ${ratingColor[atsRating] || 'text-green-600'}`}>{atsRating} RATING</div>
+                                            <div className="text-xs font-bold text-cc-text/80 leading-tight">Fix issues below to increase <br/> screening pass rate.</div>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col gap-3">
                                         <p className="text-xs text-cc-text/70 uppercase tracking-widest font-black mb-2">Actionable Checks</p>
                                         {atsTips.map((t, i) => (
-                                            <div key={i} className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-colors ${t.done ? 'border-transparent bg-cc-bg/50 opacity-60' : 'border-cc-border bg-white shadow-[2px_2px_0px_#1A1A1A]'}`}>
-                                                <CheckCircle size={18} className={`mt-0.5 shrink-0 ${t.done ? 'text-green-600' : 'text-cc-muted'}`} strokeWidth={3} />
-                                                <span className={`text-sm font-bold ${t.done ? 'line-through text-cc-text' : 'text-cc-text'}`}>{t.tip}</span>
+                                            <div key={i} className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-colors ${t.passed ? 'border-transparent bg-cc-bg/50 opacity-60' : 'border-cc-border bg-white shadow-[2px_2px_0px_#1A1A1A]'}`}>
+                                                <CheckCircle size={18} className={`mt-0.5 shrink-0 ${t.passed ? 'text-green-600' : 'text-cc-muted'}`} strokeWidth={3} />
+                                                <div>
+                                                    <span className={`text-sm font-bold ${t.passed ? 'line-through text-cc-text' : 'text-cc-text'}`}>{t.item}</span>
+                                                    {t.suggestion && !t.passed && <p className="text-[10px] font-bold text-cc-muted mt-1">{t.suggestion}</p>}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                     
-                                    <button className="btn-neo bg-cc-bg text-cc-text w-full mt-6 shadow-[2px_2px_0px_#1A1A1A]">
-                                        Run Full ATS Scan
+                                    <button
+                                        onClick={handleAIScore}
+                                        disabled={scoring}
+                                        className="btn-neo bg-cc-bg text-cc-text w-full mt-6 shadow-[2px_2px_0px_#1A1A1A] disabled:opacity-50"
+                                    >
+                                        {scoring ? (
+                                            <><Loader2 size={16} className="animate-spin mr-2" /> Scanning...</>
+                                        ) : (
+                                            'Run AI ATS Scan'
+                                        )}
                                     </button>
                                 </div>
                             </div>

@@ -8,6 +8,8 @@ export const careerMeta = {
     devops:    { label: 'Cloud & DevOps', emoji: '☁️', color: '#10B981', salary: '₹7L – ₹14L' },
     cyber:     { label: 'Cybersecurity', emoji: '🛡️', color: '#F72585', salary: '₹6L – ₹13L' },
     mobile:    { label: 'Mobile Dev', emoji: '📱', color: '#8B5CF6', salary: '₹5L – ₹12L' },
+    uiux:      { label: 'Drawing', emoji: '🎨', color: '#EC4899', salary: '₹5L – ₹12L' },
+    technicalWriting: { label: 'Literature', emoji: '✍️', color: '#6366F1', salary: '₹4L – ₹10L' },
 };
 
 export const careerCertificationsData = {
@@ -40,6 +42,16 @@ export const careerCertificationsData = {
         { title: 'Meta Android Developer', provider: 'Coursera', url: 'https://www.coursera.org/professional-certificates/meta-android-developer', icon: '📱' },
         { title: 'Meta iOS Developer', provider: 'Coursera', url: 'https://www.coursera.org/professional-certificates/meta-ios-developer', icon: '🍎' },
         { title: 'Associate Android Developer', provider: 'Google', url: 'https://developer.android.com/certification', icon: '🤖' }
+    ],
+    uiux: [
+        { title: 'Google UX Design', provider: 'Coursera', url: 'https://www.coursera.org/professional-certificates/google-ux-design', icon: '🎨' },
+        { title: 'UI/UX Specialization', provider: 'CalArts', url: 'https://www.coursera.org/specializations/ui-ux-design', icon: '🖍️' },
+        { title: 'Figma to Code', provider: 'Udemy', url: '#', icon: '⚡' }
+    ],
+    technicalWriting: [
+        { title: 'Creative Writing Specialization', provider: 'Wesleyan', url: 'https://www.coursera.org/specializations/creative-writing', icon: '📝' },
+        { title: 'The Art of Storytelling', provider: 'Pixar', url: '#', icon: '🎭' },
+        { title: 'Modern and Contemporary Poetry', provider: 'UPenn', url: 'https://www.coursera.org/learn/modpo', icon: '📜' }
     ]
 };
 
@@ -104,6 +116,22 @@ export const careerCompletionData = {
         ],
         resumeSkills: ['React Native', 'Expo', 'TypeScript', 'Firebase', 'REST APIs', 'Redux / Zustand', 'App Store Deploy', 'Reanimated 3'],
         resumeTips: ['Add Play Store / App Store links to your apps', 'Mention download counts or user ratings', 'List performance wins (app size, load time)', 'Include UI/UX design skills if applicable'],
+    },
+    uiux: {
+        jobRoles: [
+            { title: 'UI/UX Designer', salary: '₹5L – ₹12L', match: 95, icon: '🎨', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=ui+ux+designer', naukri: 'https://www.naukri.com/ui-ux-designer-jobs', indeed: 'https://in.indeed.com/jobs?q=ui+ux+designer' } },
+            { title: 'Product Designer', salary: '₹7L – ₹15L', match: 90, icon: '💡', tag: 'High Growth', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=product+designer', naukri: 'https://www.naukri.com/product-designer-jobs', indeed: 'https://in.indeed.com/jobs?q=product+designer' } },
+        ],
+        resumeSkills: ['Figma', 'Wireframing', 'Prototyping', 'User Research', 'Interaction Design', 'Usability Testing'],
+        resumeTips: ['Include a link to your Behance or Dribbble portfolio', 'Showcase 3 detailed case studies', 'Focus on problem-solving over just visuals'],
+    },
+    technicalWriting: {
+        jobRoles: [
+            { title: 'Author & Novelist', salary: '₹3L – ₹15L', match: 95, icon: '📚', tag: 'Top Pick', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=creative+writer', naukri: 'https://www.naukri.com/creative-writing-jobs', indeed: 'https://in.indeed.com/jobs?q=author' } },
+            { title: 'Copywriter & Editor', salary: '₹4L – ₹12L', match: 88, icon: '🖋️', tag: 'High Growth', links: { linkedin: 'https://www.linkedin.com/jobs/search/?keywords=editor', naukri: 'https://www.naukri.com/editor-jobs', indeed: 'https://in.indeed.com/jobs?q=copywriter' } },
+        ],
+        resumeSkills: ['Creative Writing', 'Editing & Proofreading', 'Storytelling', 'Copywriting', 'Content Strategy', 'Publishing'],
+        resumeTips: ['Include links to your published essays or blog posts', 'Mention specific writing awards or literary magazine features', 'Highlight editorial experience if applicable'],
     },
 };
 
@@ -341,6 +369,64 @@ export const roadmapData = {
             ]
         },
     ],
+
+    uiux: [
+        {
+            phase: 'Design Foundations',
+            color: '#EC4899',
+            items: [
+                { id: 'ux1', title: 'Color Theory & Typography', xp: 300, time: '2 weeks', resources: ['Coursera Design Basics', 'TeachyTechie'] },
+                { id: 'ux2', title: 'Layouts & Composition', xp: 350, time: '2 weeks', resources: ['DesignPrinciples.org', 'TeachyTechie'] },
+                { id: 'ux3', title: 'User Research Fundamentals', xp: 400, time: '3 weeks', resources: ['Nielsen Norman Group', 'TeachyTechie'] },
+            ]
+        },
+        {
+            phase: 'Prototyping & Tools',
+            color: '#8B5CF6',
+            items: [
+                { id: 'ux4', title: 'Figma Mastery', xp: 500, time: '4 weeks', resources: ['Figma Community Docs', 'TeachyTechie'] },
+                { id: 'ux5', title: 'Wireframing & User Flows', xp: 400, time: '2 weeks', resources: ['Balsamiq Wireframing Academy', 'TeachyTechie'] },
+                { id: 'ux6', title: 'High-Fidelity Prototyping', xp: 450, time: '3 weeks', resources: ['Figma Animations', 'TeachyTechie'] },
+            ]
+        },
+        {
+            phase: 'Portfolio & Delivery',
+            color: 'var(--cyan)',
+            items: [
+                { id: 'ux7', title: 'UX Case Studies', xp: 600, time: '4 weeks', resources: ['Behance Top Portfolios', 'TeachyTechie'] },
+                { id: 'ux8', title: 'Developer Handoff', xp: 350, time: '1 week', resources: ['Zeplin Guides', 'TeachyTechie'] },
+            ]
+        }
+    ],
+
+    technicalWriting: [
+        {
+            phase: 'Creative Foundations',
+            color: '#6366F1',
+            items: [
+                { id: 'tw1', title: 'Elements of Story & Plot', xp: 300, time: '2 weeks', resources: ['Coursera Creative Writing', 'MasterClass'] },
+                { id: 'tw2', title: 'Character Conception & Development', xp: 350, time: '2 weeks', resources: ['Brandonsanderson Lectures', 'Writer\'s Digest'] },
+                { id: 'tw3', title: 'Worldbuilding & Setting', xp: 400, time: '3 weeks', resources: ['Fantasy Worldbuilding Guide', 'Literature Analysis'] },
+            ]
+        },
+        {
+            phase: 'Forms & Genres',
+            color: '#F59E0B',
+            items: [
+                { id: 'tw4', title: 'Poetry & Verse', xp: 400, time: '2 weeks', resources: ['Poetry Foundation', 'UPenn ModPo'] },
+                { id: 'tw5', title: 'Creative Non-Fiction & Memoirs', xp: 450, time: '2 weeks', resources: ['NPR Training', 'Creative Nonfiction Magazine'] },
+                { id: 'tw6', title: 'Screenwriting & Playwriting', xp: 500, time: '3 weeks', resources: ['Pixar In A Box', 'Script Reader Pro'] },
+            ]
+        },
+        {
+            phase: 'The Publishing Industry',
+            color: 'var(--green)',
+            items: [
+                { id: 'tw7', title: 'Editing, Revision & Critique', xp: 600, time: '4 weeks', resources: ['Scribophile', 'The Elements of Style'] },
+                { id: 'tw8', title: 'Literary Agents & Query Letters', xp: 500, time: '3 weeks', resources: ['QueryShark', 'Jane Friedman Blog'] },
+            ]
+        }
+    ]
 };
 
 // Helper: get first locked node (the one to work on next) for a career & completedIds set
