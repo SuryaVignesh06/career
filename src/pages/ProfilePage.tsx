@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import {
     Github, Star, GitFork, MapPin, Building2, Globe, Users,
     Award, Flame, Zap, TrendingUp, Code, Target, BookOpen,
-    CheckCircle, ExternalLink, Calendar, Edit3, X, Save, Loader2
+    CheckCircle, ExternalLink, Calendar, Edit3, X, Save, Loader2, Camera
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../contexts/AuthContext';
@@ -343,6 +344,46 @@ export default function ProfilePage() {
         await updateProfile(updates);
     };
 
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 256;
+                const MAX_HEIGHT = 256;
+                let width = img.width;
+                let height = img.height;
+
+                // Scale down
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                updateProfile({ photoURL: dataUrl });
+                if (auth.currentUser) updateFirebaseAuthProfile(auth.currentUser, { photoURL: dataUrl });
+            };
+            img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
+
     return (
         <div className="bg-cc-outer min-h-[100vh] w-full flex p-4 font-dm border-box overflow-hidden">
             <Sidebar />
@@ -378,7 +419,7 @@ export default function ProfilePage() {
 
                         <div className="flex flex-col md:flex-row items-start gap-8">
                             {/* Avatar */}
-                            <div className="relative">
+                            <div className="relative group/avatar">
                                 {github?.avatar || userProfile?.photoURL ? (
                                     <img
                                         src={github?.avatar || userProfile?.photoURL}
@@ -392,6 +433,15 @@ export default function ProfilePage() {
                                         </span>
                                     </div>
                                 )}
+                                <label className="absolute inset-0 bg-black/50 text-white rounded-2xl opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        className="hidden" 
+                                        onChange={handleImageUpload} 
+                                    />
+                                    <Camera size={24} />
+                                </label>
                                 <div className="absolute -bottom-2 -right-2 bg-cc-red text-white text-xs font-black px-3 py-1 rounded-lg border-2 border-cc-border shadow-[2px_2px_0px_#1A1A1A]">
                                     LVL {level}
                                 </div>
@@ -490,6 +540,24 @@ export default function ProfilePage() {
                             transition={{ delay: 0.15 }}
                         >
                             <h3 className="text-lg font-black text-cc-text mb-6">Behavioral Analysis</h3>
+                            
+                            <div className="w-full h-64 mb-6 relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
+                                        { subject: 'Focus', A: traits.focus, fullMark: 10 },
+                                        { subject: 'Discipline', A: traits.discipline, fullMark: 10 },
+                                        { subject: 'Consistency', A: traits.consistency, fullMark: 10 },
+                                        { subject: 'Resilience', A: Math.min(10, 10 - traits.procrastination + 2), fullMark: 10 },
+                                        { subject: 'Curiosity', A: Math.min(10, traits.focus + 2), fullMark: 10 },
+                                    ]}>
+                                        <PolarGrid stroke="#E0E0E0" />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#4A4A4A', fontSize: 10, fontWeight: 900 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                                        <Radar name="Traits" dataKey="A" stroke="#EF4444" strokeWidth={3} fill="#EF4444" fillOpacity={0.2} />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            </div>
+
                             <div className="flex flex-col gap-5">
                                 {[
                                     { label: 'Focus', value: traits.focus, color: 'bg-cc-red' },

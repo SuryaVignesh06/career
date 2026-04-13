@@ -113,7 +113,10 @@ export default function DashboardPage() {
                 {/* Greeting */}
                 <motion.div className="mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                     <h1 className="text-3xl font-black text-cc-text">
-                        {streak > 0 ? `Day ${streak} Streak! ` : ''}Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {displayName}!
+                        {completedIds.length === 0 && streak === 0 
+                            ? `Welcome to CareerCraft, ${displayName}! Let's get started.`
+                            : `${streak > 0 ? `Day ${streak} Streak! ` : ''}Welcome back, ${displayName}!`
+                        }
                     </h1>
                     <p className="text-cc-muted font-bold mt-1 uppercase tracking-tight text-sm">
                         Learning Speed: <span className="text-cc-red">{userProfile?.learningSpeed || 'Standard'}</span> · 

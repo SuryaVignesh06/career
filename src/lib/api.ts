@@ -4,7 +4,7 @@
  * Includes retry logic with exponential backoff.
  */
 
-import { getApiKey } from './apiKeyStore';
+import { getApiConfig } from './apiKeyStore';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -21,14 +21,15 @@ async function apiRequest<T = any>(
   body: Record<string, any>,
   retries = 2
 ): Promise<ApiResponse<T>> {
-  const apiKey = getApiKey();
+  const config = getApiConfig();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
-  if (apiKey) {
-    headers['X-API-Key'] = apiKey;
+  if (config) {
+    headers['X-API-Key'] = config.key;
+    headers['X-API-Provider'] = config.provider;
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {

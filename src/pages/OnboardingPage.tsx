@@ -1,88 +1,117 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Zap, BrainCircuit, BarChart3, Cloud, Shield, Smartphone, PenTool, Layout, Laptop } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Zap, BrainCircuit, BarChart3, Cloud, Shield, Smartphone, PenTool, Layout, Laptop, BookOpen, Palette, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const steps = [
-    {
-        id: 0,
-        title: "What's your current status?",
-        subtitle: "Tell us where you are in your journey.",
-        field: 'status',
-        options: [
-            { value: '1st_year', label: '1st Year B.Tech', icon: PenTool },
-            { value: '2nd_year', label: '2nd Year B.Tech', icon: Layout },
-            { value: '3rd_year', label: '3rd Year B.Tech', icon: Laptop },
-            { value: '4th_year', label: '4th Year / Final', icon: AwardIcon },
-            { value: 'fresher', label: 'Recent Graduate', icon: Zap },
-        ]
-    },
-    {
-        id: 1,
-        title: "What's your target career?",
-        subtitle: "Pick the path you're most excited about.",
-        field: 'career',
-        options: [
-            { value: 'fullstack', label: 'Full Stack Dev', icon: CodeIcon },
-            { value: 'aiml', label: 'AI / ML Engineer', icon: BrainCircuit },
-            { value: 'data', label: 'Data Science', icon: BarChart3 },
-            { value: 'devops', label: 'Cloud & DevOps', icon: Cloud },
-            { value: 'cyber', label: 'Cybersecurity', icon: Shield },
-            { value: 'mobile', label: 'Mobile Dev', icon: Smartphone },
-        ]
-    },
-    {
-        id: 2,
-        title: "How comfortable are you with coding?",
-        subtitle: "Be honest — we'll build the perfect roadmap either way.",
-        field: 'level',
-        options: [
-            { value: 'beginner', label: 'Beginner — just started', icon: EggIcon },
-            { value: 'intermediate', label: 'Intermediate — know basics', icon: WrenchIcon },
-            { value: 'advanced', label: 'Advanced — built projects', icon: FlameIcon },
-        ]
-    },
-    {
-        id: 3,
-        title: "Which companies are you targeting?",
-        subtitle: "Select all that apply. Multiple options allowed.",
-        field: 'companies',
-        multi: true,
-        options: [
-            { value: 'google', label: 'Google / Meta / Big Tech', icon: TrophyIcon },
-            { value: 'startup', label: 'Startups (Swiggy, Zepto)', icon: RocketIcon },
-            { value: 'product', label: 'Product Companies', icon: BriefcaseIcon },
-            { value: 'mnc', label: 'MNCs (TCS, Infosys)', icon: BuildingIcon },
-            { value: 'open', label: 'Open to anything', icon: GlobeIcon },
-        ]
-    },
-    {
-        id: 4,
-        title: "Any secondary interests?",
-        subtitle: "Stay competent in multiple domains. (Optional)",
-        field: 'secondaryDomains',
-        multi: true,
-        options: [
-            { value: 'aiml', label: 'AI / ML Engineer', icon: BrainCircuit },
-            { value: 'devops', label: 'Cloud & DevOps', icon: Cloud },
-            { value: 'cyber', label: 'Cybersecurity', icon: Shield },
-            { value: 'mobile', label: 'Mobile Dev', icon: Smartphone },
-            { value: 'data', label: 'Data Science', icon: BarChart3 },
-        ]
-    },
-    {
-        id: 5,
-        title: "What's your goal timeline?",
-        subtitle: "How fast do you want to be job-ready?",
-        field: 'goalTimeline',
-        options: [
-            { value: '3_months', label: '3 Months (Intensive)', icon: Zap },
-            { value: '6_months', label: '6 Months (Standard)', icon: Laptop },
-            { value: '12_months', label: '1 Year (Relaxed)', icon: GlobeIcon },
-        ]
-    },
-];
+const getSteps = (career: string | undefined) => {
+    // Dynamic companies based on career
+    let companiesOptions = [
+        { value: 'google', label: 'Google / Meta / Big Tech', icon: TrophyIcon },
+        { value: 'startup', label: 'Startups (Swiggy, Zepto)', icon: RocketIcon },
+        { value: 'product', label: 'Product Companies', icon: BriefcaseIcon },
+        { value: 'mnc', label: 'MNCs (TCS, Infosys)', icon: BuildingIcon },
+        { value: 'open', label: 'Open to anything', icon: GlobeIcon },
+    ];
+    
+    if (career === 'drawing') {
+        companiesOptions = [
+            { value: 'agencies', label: 'Design & Creative Agencies', icon: Palette },
+            { value: 'product', label: 'Product Design Studios', icon: BriefcaseIcon },
+            { value: 'freelance', label: 'Freelance / Remote', icon: GlobeIcon },
+            { value: 'startup', label: 'Early-stage Startups', icon: RocketIcon },
+            { value: 'bigtech', label: 'Big Tech (Apple, Google UX)', icon: TrophyIcon }
+        ];
+    } else if (career === 'literature') {
+        companiesOptions = [
+            { value: 'oss', label: 'Open Source Foundations', icon: GlobeIcon },
+            { value: 'product', label: 'Developer Tools (Postman, Vercel)', icon: CodeIcon },
+            { value: 'agency', label: 'Tech Content Agencies', icon: BriefcaseIcon },
+            { value: 'freelance', label: 'Freelance Technical Writer', icon: BrainCircuit }
+        ];
+    }
+
+    // Dynamic secondary domains based on career
+    let secondaryOptions = [
+        { value: 'aiml', label: 'AI / ML Engineer', icon: BrainCircuit },
+        { value: 'devops', label: 'Cloud & DevOps', icon: Cloud },
+        { value: 'cyber', label: 'Cybersecurity', icon: Shield },
+        { value: 'mobile', label: 'Mobile Dev', icon: Smartphone },
+        { value: 'data', label: 'Data Science', icon: BarChart3 },
+        { value: 'drawing', label: 'UI/UX Design', icon: Palette },
+        { value: 'literature', label: 'Tech Literature', icon: BookOpen },
+    ].filter(opt => opt.value !== career); // Remove the primary career from secondary options
+
+    return [
+        {
+            id: 0,
+            title: "What's your current status?",
+            subtitle: "Tell us where you are in your journey.",
+            field: 'status',
+            options: [
+                { value: '1st_year', label: '1st Year B.Tech', icon: PenTool },
+                { value: '2nd_year', label: '2nd Year B.Tech', icon: Layout },
+                { value: '3rd_year', label: '3rd Year B.Tech', icon: Laptop },
+                { value: '4th_year', label: '4th Year / Final', icon: AwardIcon },
+                { value: 'fresher', label: 'Recent Graduate', icon: Zap },
+            ]
+        },
+        {
+            id: 1,
+            title: "What's your target career?",
+            subtitle: "Pick the path you're most excited about.",
+            field: 'career',
+            options: [
+                { value: 'fullstack', label: 'Full Stack Dev', icon: CodeIcon },
+                { value: 'aiml', label: 'AI / ML Engineer', icon: BrainCircuit },
+                { value: 'data', label: 'Data Science', icon: BarChart3 },
+                { value: 'devops', label: 'Cloud & DevOps', icon: Cloud },
+                { value: 'cyber', label: 'Cybersecurity', icon: Shield },
+                { value: 'mobile', label: 'Mobile Dev', icon: Smartphone },
+                { value: 'drawing', label: 'UI/UX & Drawing', icon: Palette },
+                { value: 'literature', label: 'Technical Writing', icon: BookOpen },
+            ]
+        },
+        {
+            id: 2,
+            title: "How comfortable are you with the basics?",
+            subtitle: "Be honest — we'll build the perfect roadmap either way.",
+            field: 'level',
+            options: [
+                { value: 'beginner', label: 'Beginner — just started', icon: EggIcon },
+                { value: 'intermediate', label: 'Intermediate — know basics', icon: WrenchIcon },
+                { value: 'advanced', label: 'Advanced — built projects', icon: FlameIcon },
+            ]
+        },
+        {
+            id: 3,
+            title: "Which domains are you targeting?",
+            subtitle: "Select all that apply. Multiple options allowed.",
+            field: 'companies',
+            multi: true,
+            options: companiesOptions
+        },
+        {
+            id: 4,
+            title: "Any secondary interests?",
+            subtitle: "Stay competent in multiple domains. (Optional)",
+            field: 'secondaryDomains',
+            multi: true,
+            options: secondaryOptions
+        },
+        {
+            id: 5,
+            title: "What's your goal timeline?",
+            subtitle: "How fast do you want to be job-ready?",
+            field: 'goalTimeline',
+            options: [
+                { value: '3_months', label: '3 Months (Intensive)', icon: Zap },
+                { value: '6_months', label: '6 Months (Standard)', icon: Laptop },
+                { value: '12_months', label: '1 Year (Relaxed)', icon: GlobeIcon },
+            ]
+        },
+    ];
+};
 
 // Helper icons mappings for UI
 function AwardIcon(props: any) { return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>; }
@@ -101,12 +130,21 @@ export default function OnboardingPage() {
     const [answers, setAnswers] = useState<Record<string, any>>({});
     const [generating, setGenerating] = useState(false);
     const navigate = useNavigate();
-    const { updateProfile } = useAuth();
+    const { updateProfile, userProfile, loading } = useAuth();
 
-    const current = steps[step];
-    const selected = answers[current.field];
+    // Redirect returning users who already did onboarding
+    React.useEffect(() => {
+        if (!loading && (userProfile?.onboardingDone || userProfile?.career)) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [userProfile, loading, navigate]);
+
+    const currentSteps = getSteps(answers.career);
+    const current = currentSteps[step];
+    const selected = answers[current?.field];
 
     const handleSelect = (value: any) => {
+        if (!current) return;
         if (current.multi) {
             const prev = answers[current.field] || [];
             const updated = prev.includes(value) ? prev.filter((v: any) => v !== value) : [...prev, value];
@@ -124,7 +162,7 @@ export default function OnboardingPage() {
     const canContinue = current.multi ? (selected || []).length > 0 : !!selected;
 
     const handleNext = () => {
-        if (step < steps.length - 1) {
+        if (step < currentSteps.length - 1) {
             setStep(s => s + 1);
         } else {
             handleFinish();
@@ -148,7 +186,18 @@ export default function OnboardingPage() {
         navigate('/dashboard');
     };
 
-    const progress = ((step) / steps.length) * 100;
+    const progress = ((step) / (currentSteps.length || 1)) * 100;
+
+    if (loading || userProfile?.onboardingDone || userProfile?.career) {
+        return (
+            <div className="min-h-screen bg-cc-bg flex items-center justify-center p-4">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 size={32} className="animate-spin text-cc-red" />
+                    <p className="font-bold text-cc-text animate-pulse">Loading workspace...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (generating) {
         return (
@@ -195,7 +244,7 @@ export default function OnboardingPage() {
                 <div className="flex items-center justify-between mb-12 mt-2">
                     <span className="font-bold text-2xl tracking-tighter text-cc-text">CareerCraft<span className="text-cc-red">.</span></span>
                     <span className="text-xs font-black uppercase tracking-widest text-cc-text/50 bg-cc-gray px-3 py-1.5 rounded-md border-2 border-cc-border">
-                        Step {step + 1} / {steps.length}
+                        Step {step + 1} / {currentSteps.length}
                     </span>
                 </div>
 

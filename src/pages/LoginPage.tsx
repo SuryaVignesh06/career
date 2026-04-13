@@ -83,7 +83,7 @@ export default function LoginPage() {
                 setTimeout(() => navigate('/onboarding'), 1000);
             } else {
                 const result = await login(email.trim(), password);
-                const dest = result?.profile?.onboardingDone ? '/dashboard' : '/onboarding';
+                const dest = (result?.profile?.onboardingDone || result?.profile?.career) ? '/dashboard' : '/onboarding';
                 setSuccess(dest === '/dashboard' ? 'Welcome back! Loading dashboard...' : 'Welcome! Let\'s set up your profile...');
                 setTimeout(() => navigate(dest), 800);
             }
@@ -98,7 +98,7 @@ export default function LoginPage() {
         setError('');
         try {
             const result = await signInWithGoogle();
-            const dest = result?.profile?.onboardingDone ? '/dashboard' : '/onboarding';
+            const dest = (result?.profile?.onboardingDone || result?.profile?.career) ? '/dashboard' : '/onboarding';
             setSuccess(dest === '/dashboard' ? 'Signed in with Google!' : 'Welcome! Let\'s set up your profile...');
             setTimeout(() => navigate(dest), 800);
         } catch (err: any) {
@@ -114,7 +114,7 @@ export default function LoginPage() {
         setError('');
         try {
             const result = await signInWithGitHub();
-            const dest = result?.profile?.onboardingDone ? '/dashboard' : '/onboarding';
+            const dest = (result?.profile?.onboardingDone || result?.profile?.career) ? '/dashboard' : '/onboarding';
             setSuccess(dest === '/dashboard' ? 'Signed in with GitHub!' : 'Welcome! Let\'s set up your profile...');
             setTimeout(() => navigate(dest), 800);
         } catch (err: any) {

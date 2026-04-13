@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Key, X, CheckCircle, AlertCircle, ExternalLink, Eye, EyeOff } from 'lucide-react';
-import { getApiKey, setApiKey, hasApiKey, clearApiKey } from '../lib/apiKeyStore';
+import { Key, X, CheckCircle, AlertCircle, ExternalLink, Eye, EyeOff, Cpu } from 'lucide-react';
+import { getApiConfig, setApiConfig, hasApiConfig, clearApiConfig, AiConfig } from '../lib/apiKeyStore';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -9,7 +9,14 @@ interface ApiKeyModalProps {
   onKeySubmitted: () => void;
 }
 
+const PROVIDERS = [
+  { id: 'anthropic', name: 'Anthropic (Claude)', prefix: 'sk-ant-', link: 'https://console.anthropic.com/settings/keys' },
+  { id: 'openai', name: 'OpenAI (GPT-4o)', prefix: 'sk-', link: 'https://platform.openai.com/api-keys' },
+  { id: 'gemini', name: 'Google Gemini', prefix: '', link: 'https://aistudio.google.com/app/apikey' }
+];
+
 export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyModalProps) {
+  const [provider, setProvider] = useState<AiConfig['provider']>('anthropic');
   const [key, setKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -17,8 +24,11 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
 
   useEffect(() => {
     if (isOpen) {
-      const existing = getApiKey();
-      if (existing) setKey(existing);
+      const existing = getApiConfig();
+      if (existing) {
+        setProvider(existing.provider);
+        setKey(existing.key);
+      }
       setSaved(false);
       setError('');
     }
@@ -32,16 +42,19 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
       setError('Please enter your API key.');
       return;
     }
-    if (!trimmed.startsWith('sk-ant-')) {
-      setError('Invalid key format. Anthropic API keys start with "sk-ant-".');
+
+    const currentProvider = PROVIDERS.find(p => p.id === provider);
+    if (currentProvider && currentProvider.prefix && !trimmed.startsWith(currentProvider.prefix)) {
+      setError(`Invalid key format. ${currentProvider.name} API keys usually start with "${currentProvider.prefix}".`);
       return;
     }
+
     if (trimmed.length < 20) {
       setError('This key seems too short. Please check and try again.');
       return;
     }
 
-    setApiKey(trimmed);
+    setApiConfig({ provider, key: trimmed });
     setSaved(true);
     setError('');
     setTimeout(() => {
@@ -51,12 +64,14 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
   };
 
   const handleClear = () => {
-    clearApiKey();
+    clearApiConfig();
     setKey('');
     setSaved(false);
   };
 
   if (!isOpen) return null;
+
+  const currentProvider = PROVIDERS.find(p => p.id === provider);
 
   return (
     <AnimatePresence>
@@ -108,23 +123,45 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
               {/* Info Box */}
               <div className="bg-cc-blue/30 border-2 border-cc-border rounded-xl p-4 mb-6">
                 <p className="text-sm font-bold text-cc-text leading-relaxed">
-                  CareerCraft uses <span className="font-black">Claude AI</span> for the Mentor, Analyzer, Resume Scorer, and Code Visualizer.
-                  Your API key is stored <span className="font-black">locally on your device</span> and sent directly to Anthropic — never saved on our servers.
+                  CareerCraft supports multiple AI models. Your API key is stored <span className="font-black">locally on your device</span> and sent directly to the provider — never saved on our servers.
                 </p>
               </div>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* Provider Selection */}
                 <div>
                   <label className="text-xs font-black text-cc-text uppercase tracking-widest mb-2 block">
-                    Anthropic API Key
+                    Choose AI Provider
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {PROVIDERS.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => { setProvider(p.id as any); setError(''); setSaved(false); }}
+                        className={`p-3 rounded-xl border-2 text-center text-xs font-black transition-all ${
+                          provider === p.id
+                            ? 'border-cc-border bg-cc-yellow shadow-[3px_3px_0px_#1A1A1A] text-cc-text -translate-y-0.5'
+                            : 'border-cc-border/30 bg-white text-cc-muted hover:border-cc-border hover:bg-cc-gray'
+                        }`}
+                      >
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-cc-text uppercase tracking-widest mb-2 block">
+                    {currentProvider?.name} API Key
                   </label>
                   <div className="relative">
                     <input
                       type={showKey ? 'text' : 'password'}
                       value={key}
                       onChange={(e) => { setKey(e.target.value); setError(''); setSaved(false); }}
-                      placeholder="sk-ant-api03-..."
+                      placeholder={`${currentProvider?.prefix || 'AIizaSy...'}...`}
                       className="w-full bg-white border-2 border-cc-border rounded-xl py-3.5 px-4 pr-12 text-cc-text font-bold font-mono text-sm placeholder:text-cc-muted focus:outline-none focus:bg-cc-yellow/10 focus:shadow-[3px_3px_0px_#1A1A1A] transition-all"
                       autoFocus
                     />
@@ -145,9 +182,9 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="flex items-center gap-2 text-sm font-bold text-white bg-cc-red border-2 border-cc-border rounded-xl px-4 py-3 shadow-[2px_2px_0px_#1A1A1A]"
+                      className="flex items-center gap-2 text-sm font-bold text-white bg-cc-red border-2 border-cc-border rounded-xl px-4 py-3 shadow-[2px_2px_0px_#1A1A1A] overflow-hidden"
                     >
-                      <AlertCircle size={16} /> {error}
+                      <AlertCircle size={16} className="shrink-0" /> {error}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -158,9 +195,9 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="flex items-center gap-2 text-sm font-bold text-white bg-green-500 border-2 border-cc-border rounded-xl px-4 py-3 shadow-[2px_2px_0px_#1A1A1A]"
+                      className="flex items-center gap-2 text-sm font-bold text-white bg-green-500 border-2 border-cc-border rounded-xl px-4 py-3 shadow-[2px_2px_0px_#1A1A1A] overflow-hidden"
                     >
-                      <CheckCircle size={16} /> API key saved! Redirecting...
+                      <CheckCircle size={16} className="shrink-0" /> API key saved! Redirecting...
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -170,15 +207,15 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
                   <button
                     type="submit"
                     disabled={saved}
-                    className="btn-neo bg-cc-red text-white py-3 px-8 flex-1 shadow-[4px_4px_0px_#1A1A1A] disabled:opacity-60"
+                    className="btn-neo bg-cc-red text-white py-3 px-8 flex-1 shadow-[4px_4px_0px_#1A1A1A] disabled:opacity-60 font-black"
                   >
-                    {saved ? 'Saved ✓' : hasApiKey() ? 'Update Key' : 'Save & Continue'}
+                    {saved ? 'Saved ✓' : hasApiConfig() ? 'Update Key' : 'Save & Continue'}
                   </button>
-                  {hasApiKey() && (
+                  {hasApiConfig() && (
                     <button
                       type="button"
                       onClick={handleClear}
-                      className="btn-neo bg-cc-gray text-cc-text py-3 px-4 shadow-[2px_2px_0px_#1A1A1A]"
+                      className="btn-neo bg-cc-gray text-cc-text py-3 px-4 shadow-[2px_2px_0px_#1A1A1A] font-black"
                     >
                       Clear
                     </button>
@@ -189,15 +226,15 @@ export default function ApiKeyModal({ isOpen, onClose, onKeySubmitted }: ApiKeyM
               {/* Get Key Link */}
               <div className="mt-6 pt-4 border-t-2 border-cc-border/10 text-center">
                 <a
-                  href="https://console.anthropic.com/settings/keys"
+                  href={currentProvider?.link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-black text-cc-red uppercase tracking-widest hover:underline inline-flex items-center gap-1.5"
                 >
-                  Get your free API key from Anthropic <ExternalLink size={12} />
+                  Get your free API key from {currentProvider?.name} <ExternalLink size={12} />
                 </a>
                 <p className="text-[10px] font-bold text-cc-muted mt-2 leading-relaxed">
-                  Create a free Anthropic account → Go to API Keys → Generate a new key → Paste above.
+                  Go to {currentProvider?.name} → Generate a new key → Paste above.
                 </p>
               </div>
             </motion.div>
@@ -218,11 +255,11 @@ export function useRequireApiKey() {
   const [apiKeyReady, setApiKeyReady] = useState(false);
 
   useEffect(() => {
-    setApiKeyReady(hasApiKey());
+    setApiKeyReady(hasApiConfig());
   }, []);
 
   const triggerCheck = (): boolean => {
-    if (hasApiKey()) {
+    if (hasApiConfig()) {
       setApiKeyReady(true);
       return true;
     }

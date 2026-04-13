@@ -13,6 +13,7 @@ const mockJobs = [
         salary: "₹40k - 60k",
         match: 92,
         tags: ["React", "TypeScript", "Tailwind"],
+        career: "fullstack",
         skills: [
             { name: "React", level: 90 },
             { name: "TypeScript", level: 85 },
@@ -29,6 +30,7 @@ const mockJobs = [
         salary: "₹1L - 1.2L",
         match: 78,
         tags: ["DSA", "Python", "Cloud"],
+        career: "fullstack",
         skills: [
             { name: "Python", level: 80 },
             { name: "DSA", level: 85 },
@@ -39,12 +41,13 @@ const mockJobs = [
     },
     {
         id: 3,
-        title: "Full Stack Developer (Early Career)",
+        title: "Full Stack Developer",
         company: "Razorpay",
         location: "Remote",
         salary: "₹15L - 25L",
         match: 85,
         tags: ["React", "Node.js", "PostgreSQL"],
+        career: "fullstack",
         skills: [
             { name: "React", level: 90 },
             { name: "Node.js", level: 75 },
@@ -52,15 +55,75 @@ const mockJobs = [
             { name: "AWS", level: 30, required: true }
         ],
         url: "#"
+    },
+    {
+        id: 4,
+        title: "UI/UX Designer",
+        company: "Cred",
+        location: "Bangalore",
+        salary: "₹12L - 18L",
+        match: 95,
+        tags: ["Figma", "Prototyping", "Design Systems"],
+        career: "drawing",
+        skills: [
+            { name: "Figma", level: 95 },
+            { name: "UI Design", level: 90 },
+            { name: "User Research", level: 60, required: true },
+            { name: "Interaction Design", level: 70, required: true }
+        ],
+        url: "#"
+    },
+    {
+        id: 5,
+        title: "AI Research Intern",
+        company: "Microsoft",
+        location: "Hyderabad",
+        salary: "₹80k - 1L",
+        match: 88,
+        tags: ["PyTorch", "LLMs", "Research"],
+        career: "aiml",
+        skills: [
+            { name: "Python", level: 90 },
+            { name: "PyTorch", level: 85 },
+            { name: "NLP", level: 60, required: true },
+            { name: "Transformers", level: 75, required: true }
+        ],
+        url: "#"
+    },
+    {
+        id: 6,
+        title: "Technical Writer",
+        company: "Postman",
+        location: "Remote",
+        salary: "₹10L - 16L",
+        match: 90,
+        tags: ["Documentation", "API", "Markdown"],
+        career: "literature",
+        skills: [
+            { name: "Technical Writing", level: 90 },
+            { name: "API Documentation", level: 80 },
+            { name: "Markdown", level: 95, required: true },
+            { name: "OpenAPI", level: 60, required: true }
+        ],
+        url: "#"
     }
 ];
 
 export default function JobsPage() {
     const { userProfile } = useAuth();
-    const [selectedJob, setSelectedJob] = useState<any>(mockJobs[0]);
+    const userCareer = userProfile?.career || 'fullstack';
     const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredJobs = mockJobs.filter(job => 
+    // Sort jobs: matching career first, then by match %
+    const sortedJobs = [...mockJobs].sort((a, b) => {
+        if (a.career === userCareer && b.career !== userCareer) return -1;
+        if (a.career !== userCareer && b.career === userCareer) return 1;
+        return b.match - a.match;
+    });
+
+    const [selectedJob, setSelectedJob] = useState<any>(sortedJobs[0]);
+
+    const filteredJobs = sortedJobs.filter(job => 
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.company.toLowerCase().includes(searchQuery.toLowerCase())
     );

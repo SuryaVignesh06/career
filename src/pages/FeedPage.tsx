@@ -44,6 +44,86 @@ const mockFeed = [
         tag: "Backend",
         relevance: 75,
         url: "#"
+    },
+    {
+        id: 5,
+        title: "Figma Variables: The New Design System Era",
+        summary: "Figma's advanced variables are blurring the lines between design and code. Learn how to architect multi-theme UI components effectively.",
+        source: "Design Systems",
+        time: "12h ago",
+        tag: "UI/UX",
+        relevance: 90,
+        url: "#"
+    },
+    {
+        id: 6,
+        title: "Writing API Documentation that Developers Actually Read",
+        summary: "Good documentation is a developer's best friend. Let's explore the core principles of using Swagger and OpenAPI specs for maximum clarity.",
+        source: "Tech Writer Weekly",
+        time: "14h ago",
+        tag: "Tech Writing",
+        relevance: 85,
+        url: "#"
+    },
+    {
+        id: 7,
+        title: "Zero Trust Architecture: Evolving past the VPN",
+        summary: "The perimeter is dead. Modern cybersecurity demands continuous verification. A deep dive into implementing Zero Trust for distributed microservices.",
+        source: "Cyber Daily",
+        time: "1d ago",
+        tag: "Cybersecurity",
+        relevance: 80,
+        url: "#"
+    },
+    {
+        id: 8,
+        title: "Next.js 15: Streaming and Partial Prerendering",
+        summary: "Vercel's latest release pushes the boundaries of web performance. Exploring how PPR combines static edge delivery with dynamic server execution.",
+        source: "Vercel News",
+        time: "2d ago",
+        tag: "Fullstack",
+        relevance: 98,
+        url: "#"
+    },
+    {
+        id: 9,
+        title: "Tailwind CSS v4: An Engine Rewrite",
+        summary: "Tailwind is dropping PostCSS for a custom Rust-based engine. Expect 10x faster build times and native CSS variables support.",
+        source: "Tailwind Labs",
+        time: "2d ago",
+        tag: "Frontend",
+        relevance: 89,
+        url: "#"
+    },
+    {
+        id: 10,
+        title: "Google's Gemini 2.5 Pro: Next Gen Capabilities",
+        summary: "The context window wars continue. How developers can leverage Gemini's massive 2.5 Pro model for code base refactoring and video analysis.",
+        source: "Google AI",
+        time: "3d ago",
+        tag: "AI/ML",
+        relevance: 92,
+        url: "#"
+    },
+    {
+        id: 11,
+        title: "Micro-Frontends: Are they worth the complexity?",
+        summary: "We dissect the pros and cons of using Module Federation versus iframes or build-time integration for enterprise scale applications.",
+        source: "Arch Digest",
+        time: "3d ago",
+        tag: "Architecture",
+        relevance: 70,
+        url: "#"
+    },
+    {
+        id: 12,
+        title: "Aesthetics in Software: Why beauty matters",
+        summary: "A deep dive into how high-fidelity visual design impacts user trust and conversion rates in B2B SaaS products.",
+        source: "UX Collective",
+        time: "4d ago",
+        tag: "UI/UX",
+        relevance: 85,
+        url: "#"
     }
 ];
 
